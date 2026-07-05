@@ -15,6 +15,19 @@ export const startSession = async (
 	}
 };
 
+export const submitItemCheck = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const item = await checksheetService.submitItemCheck(req.body);
+		res.status(201).json(successResponse(item));
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const submitDefect = async (
 	req: Request,
 	res: Response,

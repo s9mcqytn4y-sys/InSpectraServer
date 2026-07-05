@@ -12,3 +12,13 @@ export const createLaporanSchema = z.object({
 		ot_non: z.number().min(0).optional(),
 	}),
 });
+
+export const createLaporanDetailSchema = z.object({
+	body: z.object({
+		id_laporan: z.string().uuid("ID Laporan tidak valid (harus UUID)"),
+		id_part: z.string().uuid("ID Part tidak valid (harus UUID)"),
+		planning: z.number().int().min(0).default(0),
+		actual: z.number().int().min(0).default(0),
+		ng: z.number().int().min(0).default(0),
+	}),
+});

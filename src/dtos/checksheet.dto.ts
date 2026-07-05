@@ -13,15 +13,17 @@ export const startSessionSchema = z.object({
 
 export const submitDefectSchema = z.object({
 	body: z.object({
-		sessionId: z.string().uuid("ID Sesi tidak valid (harus UUID)"),
-		defectId: z.string().min(1, "ID Defect wajib diisi"),
-		quantity: z.number().int().min(1, "Kuantitas minimal 1"),
+		id_item: z.string().uuid("ID Item tidak valid (harus UUID)"),
+		id_defect: z.string().min(1, "ID Defect wajib diisi"),
+		nama_defect_snapshot: z.string().min(1, "Nama defect wajib diisi"),
+		kategori: z.string().min(1, "Kategori wajib diisi"),
+		jumlah: z.number().int().min(1, "Kuantitas minimal 1"),
 	}),
 });
 
 export const submitItemCheckSchema = z.object({
 	body: z.object({
-		sessionId: z.string().uuid("ID Sesi tidak valid (harus UUID)"),
+		id_sesi: z.string().uuid("ID Sesi tidak valid (harus UUID)"),
 		uniq_no: z.string().min(1, "Uniq No Part wajib diisi"),
 		jumlah_diperiksa: z.number().int().min(1, "Jumlah diperiksa minimal 1"),
 		jumlah_ok: z.number().int().min(0, "Jumlah OK tidak boleh negatif"),

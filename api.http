@@ -85,6 +85,32 @@ Content-Type: application/json
   "nama_operator": "Operator Test"
 }
 
+### Submit Checksheet Item
+# (Catatan: id_sesi harus valid UUID dari database)
+POST {{baseUrl}}/checksheet/item
+Content-Type: application/json
+
+{
+  "id_sesi": "00000000-0000-0000-0000-000000000000",
+  "uniq_no": "TEST-001",
+  "jumlah_diperiksa": 100,
+  "jumlah_ok": 90,
+  "jumlah_ng": 10
+}
+
+### Submit Checksheet Defect
+# (Catatan: id_item harus valid UUID dari item yang sudah dibuat)
+POST {{baseUrl}}/checksheet/defect
+Content-Type: application/json
+
+{
+  "id_item": "00000000-0000-0000-0000-000000000000",
+  "id_defect": "TEST-DEF",
+  "nama_defect_snapshot": "Test Defect API",
+  "kategori": "PROSES",
+  "jumlah": 5
+}
+
 ### ========================================
 ### LAPORAN (REPORTING)
 ### ========================================
@@ -105,6 +131,19 @@ Content-Type: application/json
   "jkn_hour": 8
 }
 
+### Create Laporan Detail
+# (Catatan: id_laporan dan id_part harus valid UUID)
+POST {{baseUrl}}/laporan/detail
+Content-Type: application/json
+
+{
+  "id_laporan": "00000000-0000-0000-0000-000000000000",
+  "id_part": "00000000-0000-0000-0000-000000000000",
+  "planning": 1000,
+  "actual": 900,
+  "ng": 10
+}
+
 ### ========================================
 ### CUTTING
 ### ========================================
@@ -114,14 +153,15 @@ GET {{baseUrl}}/cutting/batches
 # Authorization: Bearer {{authToken}}
 
 ### Create Cutting Batch
-# (Catatan: sessionId dan materialId harus valid UUID dari database)
+# (Catatan: id_sesi dan material_id harus valid UUID)
 POST {{baseUrl}}/cutting/batches
 Content-Type: application/json
 
 {
   "id_sesi": "00000000-0000-0000-0000-000000000000",
   "material_id": "00000000-0000-0000-0000-000000000000",
+  "ukuran_cutting_cm": 150.5,
   "qty_layer_ok": 10,
-  "qty_layer_ng": 0,
+  "qty_layer_ng": 1,
   "waste_panjang_cm": 2.5
 }

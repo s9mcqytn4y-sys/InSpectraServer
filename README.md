@@ -1,80 +1,84 @@
 # InSpectraServer
 
-InSpectra Quality Control Backend Server.
+InSpectra Quality Control Backend Server. Server ini dirancang khusus untuk menangani proses inspeksi kualitas (QC), manajemen data pemotongan (cutting), dan agregasi laporan produksi secara *real-time*.
 
-## 🚀 Tech Stack
+## 🚀 Teknologi (Tech Stack)
 
-- **Node.js** & **Express.js**
-- **TypeScript**
-- **Prisma ORM** with **PostgreSQL**
-- **Zod** for API Validation
-- **Swagger UI** for API Documentation
+- **Node.js** & **Express.js** (Standard Web Server)
+- **TypeScript** (Static Typing & Strict Mode)
+- **Prisma ORM** dengan **PostgreSQL**
+- **Zod** untuk Validasi DTO (Pesan Kesalahan dalam Bahasa Indonesia)
+- **Swagger UI** untuk Dokumentasi API
+- **Biome** untuk Linter & Formatter
 
-## 🛠️ Prerequisites
+## 🛠️ Prasyarat
 
-- Node.js (v20+ recommended)
+- Node.js (direkomendasikan v20+)
 - PostgreSQL Database
-- `npm` or `yarn`
+- `npm` atau `yarn`
 
-## ⚙️ Installation
+## ⚙️ Instalasi
 
-1. Clone this repository.
-2. Install dependencies:
+1. Lakukan *clone* pada repositori ini.
+2. Instal dependensi:
    ```bash
    npm install
    ```
-3. Set up your environment variables:
-   Copy `.env.example` to `.env` and fill in the details.
+3. Konfigurasi *Environment Variables*:
+   Salin `.env.example` ke `.env` dan isi detail koneksi PostgreSQL Anda.
    ```bash
    cp .env.example .env
    ```
 
 ## 🗄️ Database & Seeding
 
-Sync your Prisma schema with the database and run the seeds:
+Sinkronisasi skema Prisma dengan database dan jalankan *seeder* untuk populasi master data awal:
 
 ```bash
-# Push schema to the database
+# Melakukan push skema ke dalam database
 npx prisma db push
 
-# Seed master data (Parts, Defects, Slot Waktu)
+# Menjalankan seeder (Parts, Defects, Material, Slot Waktu)
 npx prisma db seed
 ```
 
-## 🚀 Running the App
+## 🚀 Menjalankan Aplikasi
 
-### Development
+### Mode Pengembangan (Development)
 ```bash
 npm run dev
 ```
-The server will run on the port specified in `.env` (default is `8001`).
+Server akan berjalan secara otomatis di port yang ditentukan di dalam `.env` (default: `8001`). Perubahan pada kode akan langsung merestart server.
 
-### Production
+### Mode Produksi (Production)
 ```bash
 npm run build
 npm start
 ```
 
-## 📖 API Documentation
+## 📖 Dokumentasi API
 
-Once the server is running, the Swagger UI documentation will be available at:
+Setelah server berjalan, dokumentasi interaktif Swagger UI akan tersedia di:
 
-```
+```text
 http://localhost:8001/api-docs
 ```
+Anda juga dapat menggunakan file `api.http` di dalam IDE VS Code (menggunakan REST Client) untuk melakukan pengujian manual. Seluruh panduan arsitektur dan aturan sistem tersedia di direktori `docs/`.
 
-## 🔒 Code Quality
+## 🔒 Standar Kualitas Kode
 
-Linting and Formatting:
+Kode dalam proyek ini dijaga ketat menggunakan Biome dan TypeScript.
+
+Linting dan Formatting:
 ```bash
 npm run format
 npm run lint
 ```
-Type Checking:
+Type Checking (Wajib lolos sebelum commit):
 ```bash
 npx tsc --noEmit
 ```
 
-## 📝 License
+## 📝 Lisensi
 
 Internal Use Only.

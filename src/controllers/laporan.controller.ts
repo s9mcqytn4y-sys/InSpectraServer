@@ -15,6 +15,19 @@ export const createLaporan = async (
 	}
 };
 
+export const createLaporanDetail = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const detail = await laporanService.createLaporanDetail(req.body);
+		res.status(201).json(successResponse(detail));
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const getLaporan = async (
 	_req: Request,
 	res: Response,

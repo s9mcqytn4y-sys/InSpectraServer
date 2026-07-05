@@ -14,20 +14,73 @@ export const startSession = async (data: {
 	});
 };
 
-export const submitDefect = async (data: {
-	sessionId: string;
-	defectId: string;
-	quantity: number;
+export const submitItemCheck = async (data: {
+	id_sesi: string;
+	uniq_no: string;
+	jumlah_diperiksa: number;
+	jumlah_ok: number;
+	jumlah_ng: number;
+	catatan?: string;
 }) => {
 	return await prisma.$transaction(async (tx) => {
-		// Increment total Ng
-		const session = await tx.checksheetSession.update({
-			where: { id: data.sessionId },
+		const rasio_ng =
+			data.jumlah_diperiksa > 0
+				? (data.jumlah_ng / data.jumlah_diperiksa) * 100
+				: 0;
+
+		const item = await tx.e_item_checksheet.create({
 			data: {
-				totalNg: { increment: data.quantity },
+				id_sesi: data.id_sesi,
+				uniq_no: data.uniq_no,
+				jumlah_diperiksa: data.jumlah_diperiksa,
+				jumlah_ok: data.jumlah_ok,
+				jumlah_ng: data.jumlah_ng,
+				rasio_ng: rasio_ng,
+				catatan: data.catatan,
 			},
 		});
-		return session;
+
+		const sesi = await tx.checksheetSession.findUnique({
+			where: { id: data.id_sesi },
+		});
+
+		if (sesi) {
+			const new_total_diperiksa = sesi.total_diperiksa + data.jumlah_diperiksa;
+			const new_totalOk = sesi.totalOk + data.jumlah_ok;
+			const new_totalNg = sesi.totalNg + data.jumlah_ng;
+			const new_rasio_ng_global =
+				new_total_diperiksa > 0 ? (new_totalNg / new_total_diperiksa) * 100 : 0;
+
+			await tx.checksheetSession.update({
+				where: { id: data.id_sesi },
+				data: {
+					total_diperiksa: new_total_diperiksa,
+					totalOk: new_totalOk,
+					totalNg: new_totalNg,
+					rasio_ng_global: new_rasio_ng_global,
+				},
+			});
+		}
+
+		return item;
+	});
+};
+
+export const submitDefect = async (data: {
+	id_item: string;
+	id_defect: string;
+	nama_defect_snapshot: string;
+	kategori: any;
+	jumlah: number;
+}) => {
+	return await prisma.e_defect_checksheet.create({
+		data: {
+			id_item: data.id_item,
+			id_defect: data.id_defect,
+			nama_defect_snapshot: data.nama_defect_snapshot,
+			kategori: data.kategori,
+			jumlah: data.jumlah,
+		},
 	});
 };
 

@@ -1,13 +1,16 @@
 import { Router } from "express";
 import * as laporanController from "../controllers/laporan.controller";
-import { createLaporanSchema } from "../dtos/laporan.dto";
+import {
+	createLaporanDetailSchema,
+	createLaporanSchema,
+} from "../dtos/laporan.dto";
 import { validate } from "../middlewares/validate";
 
 /**
  * @swagger
  * tags:
  *   name: Laporan
- *   description: API endpoints for managing production reports
+ *   description: API endpoints for managing production reports and details
  */
 const router = Router();
 
@@ -44,6 +47,18 @@ router.get("/", laporanController.getLaporan);
  *                 format: date-time
  *               tipe_proses:
  *                 type: string
+ *               mp_direct:
+ *                 type: number
+ *               mp_indirect:
+ *                 type: number
+ *               jkn_hour:
+ *                 type: number
+ *               jkn_menit:
+ *                 type: number
+ *               ot_prod:
+ *                 type: number
+ *               ot_non:
+ *                 type: number
  *     responses:
  *       201:
  *         description: Created production report
@@ -52,6 +67,47 @@ router.post(
 	"/",
 	validate(createLaporanSchema),
 	laporanController.createLaporan,
+);
+
+/**
+ * @swagger
+ * /api/v1/laporan/detail:
+ *   post:
+ *     summary: Create a new production report detail
+ *     tags: [Laporan]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id_laporan
+ *               - id_part
+ *               - planning
+ *               - actual
+ *               - ng
+ *             properties:
+ *               id_laporan:
+ *                 type: string
+ *                 format: uuid
+ *               id_part:
+ *                 type: string
+ *                 format: uuid
+ *               planning:
+ *                 type: number
+ *               actual:
+ *                 type: number
+ *               ng:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Created production report detail
+ */
+router.post(
+	"/detail",
+	validate(createLaporanDetailSchema),
+	laporanController.createLaporanDetail,
 );
 
 export default router;
