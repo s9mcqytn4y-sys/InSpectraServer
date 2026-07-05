@@ -1,0 +1,779 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MasterPart {
+  id                                               String                          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniqNo                                           String                          @unique @map("uniq_no")
+  part_no                                          String?
+  name                                             String                          @map("nama_part")
+  model                                            String?
+  customer                                         String?
+  commodity                                        tipe_proses_inspectra           @map("komoditas")
+  total_item_per_kanban                            Int?
+  sample_item_per_kanban                           Int?
+  sample_cycle_note                                String?
+  lokasi_gambar                                    String?
+  aktif                                            Boolean                         @default(true)
+  dibuat_pada                                      DateTime                        @default(now()) @db.Timestamptz(6)
+  diperbarui_pada                                  DateTime                        @default(now()) @db.Timestamptz(6)
+  catatan                                          String?
+  kode_internal                                    String?
+  sumber_data                                      String                          @default("MANUAL")
+  status_kelengkapan                               String                          @default("BELUM_DICEK")
+  butuh_review                                     Boolean                         @default(false)
+  catatan_review                                   String?
+  dibuat_oleh                                      String?
+  diperbarui_oleh                                  String?
+  e_cutting_batch                                  CuttingBatch[]
+  e_item_checksheet                                e_item_checksheet[]
+  e_laporan_produksi_detail                        e_laporan_produksi_detail[]
+  m_part_child_m_part_child_child_uniq_noTom_part  m_part_child[]                  @relation("m_part_child_child_uniq_noTom_part")
+  m_part_child_m_part_child_parent_uniq_noTom_part m_part_child[]                  @relation("m_part_child_parent_uniq_noTom_part")
+  m_part_cutting_size_reference                    m_part_cutting_size_reference[]
+  m_part_defect                                    m_part_defect[]
+  m_part_defect_override                           m_part_defect_override[]
+  m_part_image                                     m_part_image?
+  m_part_material                                  m_part_material[]
+
+  @@index([commodity, uniqNo], map: "idx_m_part_komoditas_aktif", where: raw("(aktif = true)"))
+  @@map("m_part")
+}
+
+model MasterMaterial {
+  id                                                                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                                                                     String?                    @unique @map("kode_material")
+  name                                                                     String                     @map("nama_material")
+  nama_normalisasi                                                         String?                    @default(dbgenerated("upper(TRIM(BOTH FROM regexp_replace(nama_material, '\\s+'::text, ' '::text, 'g'::text)))"))
+  supplier_id                                                              String?                    @db.Uuid
+  supplier_manual                                                          String?
+  jenis_material                                                           String?
+  spec_ringkas                                                             String?
+  satuan                                                                   satuan_inspectra           @default(UNKNOWN)
+  aktif                                                                    Boolean                    @default(true)
+  dibuat_pada                                                              DateTime                   @default(now()) @db.Timestamptz(6)
+  diperbarui_pada                                                          DateTime                   @default(now()) @db.Timestamptz(6)
+  spec                                                                     String?
+  kategori_material                                                        String?
+  default_satuan                                                           String?
+  sumber_data                                                              String                     @default("MANUAL")
+  status_kelengkapan                                                       String                     @default("BELUM_DICEK")
+  butuh_review                                                             Boolean                    @default(false)
+  catatan_review                                                           String?
+  dibuat_oleh                                                              String?
+  diperbarui_oleh                                                          String?
+  supplier                                                                 String?
+  lebar_roll_cm                                                            Decimal?                   @db.Decimal
+  panjang_roll_cm                                                          Decimal?                   @db.Decimal
+  tebal_mm                                                                 Decimal?                   @db.Decimal
+  berat_gsm                                                                Decimal?                   @db.Decimal
+  gramasi_gsm                                                              Decimal?                   @db.Decimal
+  warna                                                                    String?
+  catatan_spesifikasi                                                      String?
+  e_cutting_batch                                                          CuttingBatch[]
+  m_cutting_size_reference                                                 m_cutting_size_reference[]
+  m_supplier                                                               MasterSupplier?            @relation(fields: [supplier_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  m_material_defect                                                        m_material_defect[]
+  m_material_komposisi_m_material_komposisi_child_material_idTom_material  m_material_komposisi[]     @relation("m_material_komposisi_child_material_idTom_material")
+  m_material_komposisi_m_material_komposisi_parent_material_idTom_material m_material_komposisi[]     @relation("m_material_komposisi_parent_material_idTom_material")
+  m_material_spec                                                          m_material_spec[]
+  m_material_supplier                                                      m_material_supplier[]
+  m_part_material                                                          m_part_material[]
+
+  @@unique([nama_normalisasi, supplier_id, spec_ringkas])
+  @@index([nama_normalisasi], map: "idx_m_material_search", where: raw("(aktif = true)"))
+  @@map("m_material")
+}
+
+model MasterSupplier {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                String?               @unique @map("kode_supplier")
+  name                String                @unique @map("nama_supplier")
+  kategori            String?
+  alamat              String?
+  kontak              String?
+  aktif               Boolean               @default(true)
+  dibuat_pada         DateTime              @default(now()) @db.Timestamptz(6)
+  diperbarui_pada     DateTime              @default(now()) @db.Timestamptz(6)
+  catatan             String?
+  nama_normalisasi    String?
+  kategori_supplier   String?
+  sumber_data         String                @default("MANUAL")
+  dibuat_oleh         String?
+  diperbarui_oleh     String?
+  m_material          MasterMaterial[]
+  m_material_supplier m_material_supplier[]
+
+  @@map("m_supplier")
+}
+
+model MasterDefect {
+  id_defect               String                    @id
+  name                    String                    @map("nama_defect")
+  category                kategori_defect_inspectra @map("kategori")
+  proses_default          tipe_proses_inspectra?
+  aktif                   Boolean                   @default(true)
+  dibuat_pada             DateTime                  @default(now()) @db.Timestamptz(6)
+  deskripsi               String?
+  severity_default        Int?
+  diperbarui_pada         DateTime                  @default(now()) @db.Timestamptz(6)
+  kode_display            String?
+  satuan_input            String                    @default("PCS")
+  metode_pengukuran       String                    @default("COUNT")
+  proses_scope            String                    @default("ALL")
+  warna_badge             String?
+  icon_key                String?
+  e_cutting_defect_detail e_cutting_defect_detail[]
+  e_defect_checksheet     e_defect_checksheet[]
+  m_material_defect       m_material_defect[]
+  m_part_defect           m_part_defect[]
+  m_part_defect_override  m_part_defect_override[]
+
+  @@map("m_defect")
+}
+
+model MasterEmployee {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nama_lengkap      String
+  tipe_pekerja      tipe_pekerja_inspectra
+  no_reg            String?                @unique
+  line_process      tipe_proses_inspectra
+  aktif             Boolean                @default(true)
+  dibuat_pada       DateTime               @default(now()) @db.Timestamptz(6)
+  diperbarui_pada   DateTime               @default(now()) @db.Timestamptz(6)
+  t_rasio_kehadiran t_rasio_kehadiran[]
+
+  @@map("m_karyawan")
+}
+
+model ChecksheetSession {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kode_sesi           String?               @unique
+  tipe_proses         tipe_proses_inspectra
+  tanggal_pemeriksaan DateTime              @default(dbgenerated("CURRENT_DATE")) @db.Date
+  nama_shift          String                @default("SHIFT_1")
+  nama_operator       String?
+  nama_line           String?
+  device_id           String?
+  app_version         String?
+  total_diperiksa     Int                   @default(0)
+  totalOk             Int                   @default(0) @map("total_ok")
+  totalNg             Int                   @default(0) @map("total_ng")
+  rasio_ng_global     Decimal               @default(0) @db.Decimal(8, 3)
+  status              String                @default("TERKIRIM")
+  dibuat_pada         DateTime              @default(now()) @db.Timestamptz(6)
+  catatan             String?
+  diperbarui_pada     DateTime              @default(now()) @db.Timestamptz(6)
+  takt_time_seconds   Int?                  @default(0)
+  e_cutting_batch     CuttingBatch[]
+  e_item_checksheet   e_item_checksheet[]
+
+  @@index([tanggal_pemeriksaan(sort: Desc), tipe_proses], map: "idx_e_sesi_tanggal_tipe")
+  @@map("e_sesi_checksheet")
+}
+
+model CuttingBatch {
+  id                            String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_sesi                       String                         @db.Uuid
+  material_id                   String                         @db.Uuid
+  material_spec_id              String?                        @db.Uuid
+  tanggal                       DateTime                       @default(dbgenerated("CURRENT_DATE")) @db.Date
+  no_lot_roll                   String?
+  no_roll                       String?
+  size_cutting_cm               Decimal?                       @db.Decimal(12, 3)
+  roll_width_cm_snapshot        Decimal?                       @db.Decimal(12, 3)
+  roll_length_cm_snapshot       Decimal?                       @db.Decimal(12, 3)
+  qty_layer_ok                  Int                            @default(0)
+  qty_layer_ng                  Int                            @default(0)
+  waste_panjang_cm              Decimal                        @default(0) @db.Decimal(12, 3)
+  pic                           String?
+  catatan                       String?
+  dibuat_pada                   DateTime                       @default(now()) @db.Timestamptz(6)
+  diperbarui_pada               DateTime                       @default(now()) @db.Timestamptz(6)
+  ukuran_cutting_cm             Decimal?                       @db.Decimal(12, 3)
+  nama_material_snapshot        String?                        @db.VarChar
+  nama_operator                 String?                        @db.VarChar
+  spec_material_snapshot        String?
+  uniq_no_part                  String?
+  nama_part_snapshot            String?
+  part_size_reference_id        String?                        @db.Uuid
+  ukuran_manual                 Boolean                        @default(true)
+  size_reference_id             String?                        @db.Uuid
+  nomor_lot_roll                String?
+  panjang_ok_cm                 Decimal?                       @db.Decimal(14, 3)
+  panjang_ng_cm                 Decimal                        @default(0) @db.Decimal(14, 3)
+  panjang_waste_cm              Decimal?                       @db.Decimal(14, 3)
+  panjang_roll_awal_cm          Decimal?                       @db.Decimal(14, 3)
+  jumlah_potong_ok              Int?
+  sumber_input                  String                         @default("ANDROID")
+  takt_time_seconds             Int?                           @default(0)
+  e_sesi_checksheet             ChecksheetSession              @relation(fields: [id_sesi], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_material                    MasterMaterial                 @relation(fields: [material_id], references: [id], onUpdate: NoAction)
+  m_material_spec               m_material_spec?               @relation(fields: [material_spec_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  m_part_cutting_size_reference m_part_cutting_size_reference? @relation(fields: [part_size_reference_id], references: [id], onUpdate: NoAction)
+  m_cutting_size_reference      m_cutting_size_reference?      @relation(fields: [size_reference_id], references: [id], onUpdate: NoAction)
+  m_part                        MasterPart?                    @relation(fields: [uniq_no_part], references: [uniqNo], onDelete: Restrict, onUpdate: NoAction)
+  e_cutting_defect_detail       e_cutting_defect_detail[]
+
+  @@index([uniq_no_part, part_size_reference_id], map: "idx_e_cutting_batch_part_reference")
+  @@index([id_sesi], map: "idx_e_cutting_batch_sesi")
+  @@map("e_cutting_batch")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model audit_master_data {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tabel       String
+  aksi        String
+  entity_key  String?
+  before_data Json?
+  after_data  Json?
+  alasan      String?
+  actor       String?
+  dibuat_pada DateTime @default(now()) @db.Timestamptz(6)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_cutting_defect_detail {
+  id                     String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_cutting_batch       String        @db.Uuid
+  id_defect              String
+  nama_defect_snapshot   String?
+  jumlah_layer           Int           @default(0)
+  panjang_defect_cm      Decimal       @default(0) @db.Decimal(12, 3)
+  slot_waktu_id          String?       @db.Uuid
+  catatan                String?
+  dibuat_pada            DateTime      @default(now()) @db.Timestamptz(6)
+  diperbarui_pada        DateTime      @default(now()) @db.Timestamptz(6)
+  jumlah_layer_terdampak Int?
+  persentase_dari_ng     Decimal?      @db.Decimal(8, 3)
+  sumber_input           String        @default("ANDROID")
+  e_cutting_batch        CuttingBatch  @relation(fields: [id_cutting_batch], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_defect               MasterDefect  @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
+  m_slot_waktu           m_slot_waktu? @relation(fields: [slot_waktu_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@index([id_cutting_batch], map: "idx_e_cutting_defect_batch")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_defect_checksheet {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_item                  String                     @db.Uuid
+  id_defect                String
+  nama_defect_snapshot     String
+  kategori                 kategori_defect_inspectra
+  jumlah                   Int                        @default(0)
+  dibuat_pada              DateTime                   @default(now()) @db.Timestamptz(6)
+  diperbarui_pada          DateTime                   @default(now()) @db.Timestamptz(6)
+  m_defect                 MasterDefect               @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
+  e_item_checksheet        e_item_checksheet          @relation(fields: [id_item], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  e_defect_slot_checksheet e_defect_slot_checksheet[]
+
+  @@unique([id_item, id_defect])
+  @@index([id_item], map: "idx_e_defect_item")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_defect_slot_checksheet {
+  id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_defect_checksheet String              @db.Uuid
+  slot_waktu_id        String?             @db.Uuid
+  jumlah               Int                 @default(0)
+  dibuat_pada          DateTime            @default(now()) @db.Timestamptz(6)
+  e_defect_checksheet  e_defect_checksheet @relation(fields: [id_defect_checksheet], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_slot_waktu         m_slot_waktu?       @relation(fields: [slot_waktu_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_detail_cutting {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_item           String            @db.Uuid
+  no_lot_roll       String?
+  no_roll           String?
+  size_cutting_cm   String?
+  qty_ok            Int?
+  qty_ng            Int?
+  waste             Decimal?          @db.Decimal(12, 3)
+  pic               String?
+  catatan           String?
+  dibuat_pada       DateTime          @default(now()) @db.Timestamptz(6)
+  e_item_checksheet e_item_checksheet @relation(fields: [id_item], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_item_checksheet {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_sesi             String                @db.Uuid
+  uniq_no             String
+  jumlah_diperiksa    Int                   @default(0)
+  jumlah_ok           Int                   @default(0)
+  jumlah_ng           Int                   @default(0)
+  rasio_ng            Decimal               @default(0) @db.Decimal(8, 3)
+  catatan             String?
+  dibuat_pada         DateTime              @default(now()) @db.Timestamptz(6)
+  diperbarui_pada     DateTime              @default(now()) @db.Timestamptz(6)
+  e_defect_checksheet e_defect_checksheet[]
+  e_detail_cutting    e_detail_cutting[]
+  e_sesi_checksheet   ChecksheetSession     @relation(fields: [id_sesi], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_part              MasterPart            @relation(fields: [uniq_no], references: [uniqNo], onUpdate: NoAction)
+
+  @@index([id_sesi], map: "idx_e_item_sesi")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_laporan_produksi {
+  id                        String                      @id(map: "laporan_produksi_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tanggal                   DateTime                    @db.Date
+  tipe_proses               String
+  mp_direct                 Int                         @default(0)
+  mp_indirect               Int                         @default(0)
+  jkn_hour                  Int                         @default(0)
+  jkn_menit                 Int                         @default(0)
+  ot_prod                   Decimal                     @default(0) @db.Decimal
+  ot_non                    Decimal                     @default(0) @db.Decimal
+  bantuan_keluar            Int                         @default(0)
+  bantuan_masuk             Int                         @default(0)
+  created_at                DateTime                    @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  takt_time_seconds         Int?                        @default(0)
+  e_laporan_produksi_detail e_laporan_produksi_detail[]
+
+  @@unique([tanggal, tipe_proses], map: "laporan_produksi_tanggal_tipe_proses_key")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model e_laporan_produksi_detail {
+  id                 String             @id(map: "laporan_produksi_detail_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_laporan         String             @db.Uuid
+  id_part            String             @db.Uuid
+  planning           Int                @default(0)
+  actual             Int                @default(0)
+  ng                 Int                @default(0)
+  created_at         DateTime           @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  e_laporan_produksi e_laporan_produksi @relation(fields: [id_laporan], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "laporan_produksi_detail_id_laporan_fkey")
+  m_part             MasterPart         @relation(fields: [id_part], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "laporan_produksi_detail_id_part_fkey")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_crud_guard_rule {
+  kode             String  @id
+  label            String
+  perlu_konfirmasi Boolean @default(true)
+  perlu_alasan     Boolean @default(false)
+  severity         String  @default("MEDIUM")
+  aktif            Boolean @default(true)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model m_cutting_size_reference {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material_id       String           @db.Uuid
+  size_cutting_cm   Decimal?         @db.Decimal(12, 3)
+  ukuran_cutting_cm Decimal?         @db.Decimal(12, 3)
+  urutan            Int              @default(1)
+  aktif             Boolean          @default(true)
+  dibuat_pada       DateTime         @default(now()) @db.Timestamptz(6)
+  material_spec_id  String?          @db.Uuid
+  lebar_roll_cm     Decimal?         @db.Decimal(12, 3)
+  panjang_roll_cm   Decimal?         @db.Decimal(14, 3)
+  berat_gsm         Decimal?         @db.Decimal(12, 3)
+  tebal_mm          Decimal?         @db.Decimal(12, 3)
+  label_ukuran      String?
+  is_default        Boolean          @default(false)
+  pemakaian_count   Int              @default(0)
+  sumber_data       String           @default("MANUAL")
+  diperbarui_pada   DateTime         @default(now()) @db.Timestamptz(6)
+  e_cutting_batch   CuttingBatch[]
+  m_material        MasterMaterial   @relation(fields: [material_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_material_spec   m_material_spec? @relation(fields: [material_spec_id], references: [id], onUpdate: NoAction)
+
+  @@unique([material_id, size_cutting_cm])
+  @@index([material_id, urutan], map: "idx_cutting_size_ref_material", where: raw("(aktif = true)"))
+  @@index([material_id, size_cutting_cm], map: "idx_m_cutting_size_reference_material", where: raw("(aktif = true)"))
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_data_revision {
+  kode            String   @id
+  versi           BigInt   @default(1)
+  deskripsi       String?
+  diperbarui_pada DateTime @default(now()) @db.Timestamptz(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_default_image {
+  kode         String  @id
+  label        String
+  icon_key     String?
+  bucket_id    String?
+  storage_path String?
+  public_url   String?
+  aktif        Boolean @default(true)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_material_defect {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material_id       String         @db.Uuid
+  id_defect         String
+  urutan            Int            @default(1)
+  wajib_check       Boolean        @default(true)
+  aktif             Boolean        @default(true)
+  dibuat_pada       DateTime       @default(now()) @db.Timestamptz(6)
+  diperbarui_pada   DateTime       @default(now()) @db.Timestamptz(6)
+  proses_scope      String         @default("ALL")
+  satuan_input      String?
+  metode_pengukuran String?
+  severity          Int?
+  sumber_data       String         @default("MANUAL")
+  catatan           String?
+  m_defect          MasterDefect   @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
+  m_material        MasterMaterial @relation(fields: [material_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([material_id, id_defect])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model m_material_komposisi {
+  id                                                             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parent_material_id                                             String           @db.Uuid
+  child_material_id                                              String           @db.Uuid
+  child_material_spec_id                                         String?          @db.Uuid
+  peran_material                                                 String           @default("KOMPONEN")
+  urutan                                                         Int              @default(1)
+  qty                                                            Decimal?         @db.Decimal(14, 4)
+  satuan                                                         String?
+  persentase                                                     Decimal?         @db.Decimal(7, 3)
+  wajib                                                          Boolean          @default(true)
+  aktif                                                          Boolean          @default(true)
+  sumber_data                                                    String           @default("MANUAL")
+  dibuat_pada                                                    DateTime         @default(now()) @db.Timestamptz(6)
+  diperbarui_pada                                                DateTime         @default(now()) @db.Timestamptz(6)
+  m_material_m_material_komposisi_child_material_idTom_material  MasterMaterial   @relation("m_material_komposisi_child_material_idTom_material", fields: [child_material_id], references: [id], onUpdate: NoAction)
+  m_material_spec                                                m_material_spec? @relation(fields: [child_material_spec_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  m_material_m_material_komposisi_parent_material_idTom_material MasterMaterial   @relation("m_material_komposisi_parent_material_idTom_material", fields: [parent_material_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([child_material_id], map: "idx_material_komposisi_child", where: raw("(aktif = true)"))
+  @@index([parent_material_id], map: "idx_material_komposisi_parent", where: raw("(aktif = true)"))
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_material_spec {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material_id              String                     @db.Uuid
+  spec_asli                String?
+  lebar_value              Decimal?                   @db.Decimal(12, 3)
+  lebar_unit               String?                    @default("m")
+  panjang_value            Decimal?                   @db.Decimal(12, 3)
+  panjang_unit             String?                    @default("m")
+  tebal_value              Decimal?                   @db.Decimal(12, 3)
+  tebal_unit               String?                    @default("mm")
+  berat_value              Decimal?                   @db.Decimal(12, 3)
+  berat_unit               String?                    @default("gsm")
+  qty_value                Decimal?                   @db.Decimal(12, 3)
+  qty_unit                 satuan_inspectra?          @default(UNKNOWN)
+  warna                    String?
+  grade                    String?
+  keterangan               String?
+  aktif                    Boolean                    @default(true)
+  dibuat_pada              DateTime                   @default(now()) @db.Timestamptz(6)
+  diperbarui_pada          DateTime                   @default(now()) @db.Timestamptz(6)
+  material_spec_code       String?
+  lebar_cm                 Decimal?                   @db.Decimal(12, 3)
+  panjang_roll_cm          Decimal?                   @db.Decimal(14, 3)
+  tebal_mm                 Decimal?                   @db.Decimal(12, 3)
+  berat_gsm                Decimal?                   @db.Decimal(12, 3)
+  gramasi_gsm              Decimal?                   @db.Decimal(12, 3)
+  qty_default              Decimal?                   @db.Decimal(12, 3)
+  satuan_qty               String?
+  sumber_data              String                     @default("MANUAL")
+  is_default               Boolean                    @default(false)
+  satuan                   satuan_inspectra           @default(UNKNOWN)
+  e_cutting_batch          CuttingBatch[]
+  m_cutting_size_reference m_cutting_size_reference[]
+  m_material_komposisi     m_material_komposisi[]
+  m_material               MasterMaterial             @relation(fields: [material_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_part_material          m_part_material[]
+
+  @@unique([material_id, spec_asli])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_material_supplier {
+  id                     String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  material_id            String            @db.Uuid
+  supplier_id            String            @db.Uuid
+  supplier_part_no       String?
+  supplier_material_name String?
+  harga_referensi        Decimal?          @db.Decimal(16, 2)
+  mata_uang              String            @default("IDR")
+  lead_time_hari         Int?
+  is_preferred           Boolean           @default(false)
+  aktif                  Boolean           @default(true)
+  sumber_data            String            @default("MANUAL")
+  dibuat_pada            DateTime          @default(now()) @db.Timestamptz(6)
+  diperbarui_pada        DateTime          @default(now()) @db.Timestamptz(6)
+  m_material             MasterMaterial    @relation(fields: [material_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  m_supplier             MasterSupplier    @relation(fields: [supplier_id], references: [id], onUpdate: NoAction)
+  m_part_material        m_part_material[]
+
+  @@unique([material_id, supplier_id])
+  @@index([material_id], map: "idx_material_supplier_material", where: raw("(aktif = true)"))
+  @@index([supplier_id], map: "idx_material_supplier_supplier", where: raw("(aktif = true)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_media_asset {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bucket_id       String         @default("part-images")
+  storage_path    String
+  public_url      String?
+  mime_type       String?
+  size_bytes      BigInt?
+  width_px        Int?
+  height_px       Int?
+  checksum_sha256 String?
+  status          String         @default("AKTIF")
+  sumber          String         @default("USER_UPLOAD")
+  dibuat_oleh     String?
+  dibuat_pada     DateTime       @default(now()) @db.Timestamptz(6)
+  m_part_image    m_part_image[]
+
+  @@unique([bucket_id, storage_path])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_child {
+  id                                         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parent_uniq_no                             String
+  child_uniq_no                              String
+  peran_child                                String     @default("KOMPONEN")
+  qty                                        Decimal    @default(1) @db.Decimal(14, 4)
+  urutan                                     Int        @default(1)
+  aktif                                      Boolean    @default(true)
+  sumber_data                                String     @default("MANUAL")
+  catatan                                    String?
+  dibuat_pada                                DateTime   @default(now()) @db.Timestamptz(6)
+  diperbarui_pada                            DateTime   @default(now()) @db.Timestamptz(6)
+  m_part_m_part_child_child_uniq_noTom_part  MasterPart @relation("m_part_child_child_uniq_noTom_part", fields: [child_uniq_no], references: [uniqNo], onUpdate: NoAction)
+  m_part_m_part_child_parent_uniq_noTom_part MasterPart @relation("m_part_child_parent_uniq_noTom_part", fields: [parent_uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([parent_uniq_no, child_uniq_no, peran_child])
+  @@index([child_uniq_no], map: "idx_part_child_child", where: raw("(aktif = true)"))
+  @@index([parent_uniq_no], map: "idx_part_child_parent", where: raw("(aktif = true)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_cutting_size_reference {
+  id                   String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniq_no              String
+  size_cutting_cm      Decimal        @db.Decimal(12, 3)
+  urutan               Int            @default(1)
+  nama_material_sumber String?
+  part_no_sumber       String?
+  project_sumber       String?
+  aktif                Boolean        @default(true)
+  dibuat_pada          DateTime       @default(now()) @db.Timestamptz(6)
+  diperbarui_pada      DateTime       @default(now()) @db.Timestamptz(6)
+  e_cutting_batch      CuttingBatch[]
+  m_part               MasterPart     @relation(fields: [uniq_no], references: [uniqNo], onUpdate: NoAction)
+
+  @@unique([uniq_no, size_cutting_cm])
+  @@index([uniq_no, urutan], map: "idx_m_part_cutting_size_reference_part", where: raw("(aktif = true)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_defect {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniq_no           String
+  id_defect         String
+  urutan            Int          @default(1)
+  wajib_check       Boolean      @default(true)
+  aktif             Boolean      @default(true)
+  dibuat_pada       DateTime     @default(now()) @db.Timestamptz(6)
+  sumber            String       @default("MANUAL")
+  diperbarui_pada   DateTime     @default(now()) @db.Timestamptz(6)
+  proses_scope      String       @default("ALL")
+  satuan_input      String?
+  metode_pengukuran String?
+  sumber_data       String       @default("MANUAL")
+  catatan           String?
+  m_defect          MasterDefect @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
+  m_part            MasterPart   @relation(fields: [uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([uniq_no, id_defect])
+  @@index([uniq_no], map: "idx_m_part_defect_uniq", where: raw("(aktif = true)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_defect_override {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniq_no         String
+  id_defect       String
+  mode_override   String
+  alasan          String?
+  aktif           Boolean      @default(true)
+  dibuat_pada     DateTime     @default(now()) @db.Timestamptz(6)
+  diperbarui_pada DateTime     @default(now()) @db.Timestamptz(6)
+  m_defect        MasterDefect @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
+  m_part          MasterPart   @relation(fields: [uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([uniq_no, id_defect])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_image {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniq_no         String         @unique(map: "ux_part_image_primary", where: raw("((aktif = true) AND (is_primary = true))"))
+  media_id        String?        @db.Uuid
+  is_primary      Boolean        @default(true)
+  urutan          Int            @default(1)
+  aktif           Boolean        @default(true)
+  catatan         String?
+  dibuat_pada     DateTime       @default(now()) @db.Timestamptz(6)
+  diperbarui_pada DateTime       @default(now()) @db.Timestamptz(6)
+  m_media_asset   m_media_asset? @relation(fields: [media_id], references: [id], onUpdate: NoAction)
+  m_part          MasterPart     @relation(fields: [uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_part_material {
+  id                   String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  uniq_no              String
+  material_id          String               @db.Uuid
+  material_spec_id     String?              @db.Uuid
+  urutan               Int                  @default(1)
+  label_material       String
+  qty_per_part         Decimal?             @db.Decimal(12, 4)
+  wajib_check          Boolean              @default(true)
+  aktif                Boolean              @default(true)
+  dibuat_pada          DateTime             @default(now()) @db.Timestamptz(6)
+  diperbarui_pada      DateTime             @default(now()) @db.Timestamptz(6)
+  material_supplier_id String?              @db.Uuid
+  peran_material       String               @default("UTAMA")
+  usage_area           String?
+  qty_per_kanban       Decimal?             @db.Decimal(14, 4)
+  panjang_kebutuhan_cm Decimal?             @db.Decimal(14, 3)
+  lebar_kebutuhan_cm   Decimal?             @db.Decimal(14, 3)
+  sumber_data          String               @default("MANUAL")
+  catatan              String?
+  m_material           MasterMaterial       @relation(fields: [material_id], references: [id], onUpdate: NoAction)
+  m_material_spec      m_material_spec?     @relation(fields: [material_spec_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  m_material_supplier  m_material_supplier? @relation(fields: [material_supplier_id], references: [id], onUpdate: NoAction)
+  m_part               MasterPart           @relation(fields: [uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([uniq_no, material_id, material_spec_id])
+  @@index([uniq_no], map: "idx_m_part_material_uniq", where: raw("(aktif = true)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model m_slot_waktu {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kode_slot                String                     @unique
+  tipe_proses              tipe_proses_inspectra
+  nama_shift               String                     @default("SHIFT_1")
+  label_waktu              String
+  urutan                   Int
+  aktif                    Boolean                    @default(true)
+  jam_mulai                DateTime?                  @db.Time(6)
+  jam_selesai              DateTime?                  @db.Time(6)
+  dibuat_pada              DateTime                   @default(now()) @db.Timestamptz(6)
+  diperbarui_pada          DateTime                   @default(now()) @db.Timestamptz(6)
+  e_cutting_defect_detail  e_cutting_defect_detail[]
+  e_defect_slot_checksheet e_defect_slot_checksheet[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model t_rasio_kehadiran {
+  id                  String                        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tanggal             DateTime                      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  line_process        tipe_proses_inspectra
+  karyawan_id         String                        @db.Uuid
+  keterangan          keterangan_hadir_inspectra    @default(HADIR)
+  jam_lembur_aktual   Decimal?                      @default(0) @db.Decimal(4, 1)
+  lembur_non_main_job lembur_non_main_job_inspectra @default(TIDAK_ADA)
+  pic_name            String
+  dibuat_pada         DateTime                      @default(now()) @db.Timestamptz(6)
+  takt_time_seconds   Int?                          @default(0)
+  m_karyawan          MasterEmployee                @relation(fields: [karyawan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([tanggal, karyawan_id])
+}
+
+enum kategori_defect_inspectra {
+  MATERIAL
+  PROSES
+}
+
+enum keterangan_hadir_inspectra {
+  HADIR
+  SAKIT
+  TELAT
+  CUTI
+  IZIN_PULANG
+  IZIN_TELAT
+}
+
+enum lembur_non_main_job_inspectra {
+  TIDAK_ADA
+  BANTU_LINE_LAIN
+  S               @map("5S")
+  REWORK_REPAIR
+  SETTING_MESIN
+}
+
+enum satuan_inspectra {
+  PCS
+  ROLL
+  MTR
+  KG
+  GRAM
+  CONES
+  CAN
+  SET
+  LEMBAR
+  UNKNOWN
+}
+
+enum tipe_pekerja_inspectra {
+  KARYAWAN
+  PKL
+}
+
+enum tipe_proses_inspectra {
+  PRESS
+  SEWING
+  CUTTING
+  MATERIAL
+  PASS_THROUGH
+  CONSUMABLE
+  PRESS_SPRAY
+  PRESS_CUTTING
+  PRESS_PRESS
+  QUALITY_CONTROL
+}

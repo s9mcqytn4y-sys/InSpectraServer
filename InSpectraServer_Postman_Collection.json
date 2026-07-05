@@ -1,0 +1,67 @@
+{
+  "info": {
+    "name": "InSpectraServer API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Master Data",
+      "item": [
+        {
+          "name": "Get Parts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/v1/masterdata/parts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "masterdata", "parts"]
+            }
+          }
+        },
+        {
+          "name": "Create Part",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uniqNo\": \"P001\",\n  \"name\": \"Part A\",\n  \"commodity\": \"PRESS\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/masterdata/parts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "masterdata", "parts"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checksheet",
+      "item": [
+        {
+          "name": "Get Sessions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/v1/checksheet/sessions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "checksheet", "sessions"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

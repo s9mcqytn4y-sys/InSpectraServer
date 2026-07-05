@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: inspectra-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-inspectra}
+    ports:
+      - "5432:5432"
+    volumes:
+      - inspectra_v2_pgdata:/var/lib/postgresql/data
+      - ../Users/Acer/AndroidStudioProjects/InSpectra/supabase/migrations:/docker-entrypoint-initdb.d:ro
+
+  api:
+    build: .
+    container_name: inspectra-api
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-inspectra}?schema=public
+      PORT: 3000
+    depends_on:
+      - db
+
+volumes:
+  inspectra_v2_pgdata:
