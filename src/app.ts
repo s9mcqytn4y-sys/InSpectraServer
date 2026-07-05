@@ -1,3 +1,4 @@
+import path from "node:path";
 import cors from "cors";
 import express, {
 	type NextFunction,
@@ -7,11 +8,10 @@ import express, {
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
-import path from "node:path";
+import { setupSwagger } from "./config/swagger";
 import { env } from "./env";
 import { errorResponse } from "./utils/ApiResponse";
 import { logger } from "./utils/logger";
-import { setupSwagger } from "./config/swagger";
 
 const app = express();
 const PORT = env.PORT;

@@ -12,6 +12,9 @@
     "lint": "biome check ./src",
     "format": "biome format --write ./src"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

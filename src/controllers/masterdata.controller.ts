@@ -61,7 +61,9 @@ export const uploadImage = async (
 ) => {
 	try {
 		if (!req.file) {
-			return res.status(400).json({ status: "fail", message: "No file uploaded" });
+			return res
+				.status(400)
+				.json({ status: "fail", message: "No file uploaded" });
 		}
 		const fileUrl = `/public/uploads/${req.file.filename}`;
 		res.status(201).json(successResponse({ url: fileUrl }));
