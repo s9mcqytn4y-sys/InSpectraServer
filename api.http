@@ -1,0 +1,127 @@
+@baseUrl = http://localhost:8000/api/v1
+@authToken = {{login.response.body.data.token}}
+
+### Authentication (TBD)
+# Login endpoint placeholder (currently Auth is disabled/postponed)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+### ========================================
+### MASTER DATA
+### ========================================
+
+### Get All Parts
+GET {{baseUrl}}/masterdata/parts
+# Authorization: Bearer {{authToken}}
+
+### Create New Part
+POST {{baseUrl}}/masterdata/parts
+Content-Type: application/json
+# Authorization: Bearer {{authToken}}
+
+{
+  "uniqNo": "TEST-001",
+  "part_no": "P-TEST-001",
+  "name": "Test Part",
+  "commodity": "PRESS",
+  "catatan": "Test via API Client"
+}
+
+### Get All Materials
+GET {{baseUrl}}/masterdata/materials
+# Authorization: Bearer {{authToken}}
+
+### Create New Material
+POST {{baseUrl}}/masterdata/materials
+Content-Type: application/json
+# Authorization: Bearer {{authToken}}
+
+{
+  "code": "TEST-MAT",
+  "name": "Test Material API",
+  "kategori_material": "FABRIC",
+  "satuan": "ROLL"
+}
+
+### Get All Defects
+GET {{baseUrl}}/masterdata/defects
+# Authorization: Bearer {{authToken}}
+
+### Create New Defect
+POST {{baseUrl}}/masterdata/defects
+Content-Type: application/json
+# Authorization: Bearer {{authToken}}
+
+{
+  "id_defect": "TEST-DEF",
+  "name": "Test Defect API",
+  "category": "PROSES",
+  "deskripsi": "Defect buatan testing",
+  "severity_default": 2
+}
+
+
+### ========================================
+### CHECKSHEET
+### ========================================
+
+### Get Checksheet Sessions
+GET {{baseUrl}}/checksheet/sessions
+# Authorization: Bearer {{authToken}}
+
+### Start Checksheet Session
+POST {{baseUrl}}/checksheet/sessions
+Content-Type: application/json
+
+{
+  "tipe_proses": "PRESS",
+  "nama_shift": "SHIFT_1",
+  "nama_operator": "Operator Test"
+}
+
+### ========================================
+### LAPORAN (REPORTING)
+### ========================================
+
+### Get All Laporan
+GET {{baseUrl}}/laporan
+# Authorization: Bearer {{authToken}}
+
+### Create Laporan
+POST {{baseUrl}}/laporan
+Content-Type: application/json
+
+{
+  "tanggal": "2026-07-05T00:00:00Z",
+  "tipe_proses": "PRESS",
+  "mp_direct": 10,
+  "mp_indirect": 2,
+  "jkn_hour": 8
+}
+
+### ========================================
+### CUTTING
+### ========================================
+
+### Get Cutting Batches
+GET {{baseUrl}}/cutting/batches
+# Authorization: Bearer {{authToken}}
+
+### Create Cutting Batch
+# (Catatan: sessionId dan materialId harus valid UUID dari database)
+POST {{baseUrl}}/cutting/batches
+Content-Type: application/json
+
+{
+  "id_sesi": "00000000-0000-0000-0000-000000000000",
+  "material_id": "00000000-0000-0000-0000-000000000000",
+  "qty_layer_ok": 10,
+  "qty_layer_ng": 0,
+  "waste_panjang_cm": 2.5
+}

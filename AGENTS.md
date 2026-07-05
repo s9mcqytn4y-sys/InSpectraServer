@@ -12,7 +12,11 @@ Anda adalah autonomous senior Backend Node.js engineer untuk **InSpectraServer**
 - **TypeScript (Strict Mode)**
 - **Prisma ORM & PostgreSQL**
 - **Zod** untuk DTO & Validation
-- Arsitektur berbasis **Controller-Service-Repository** (jika diperlukan, atau Service murni).
+- Arsitektur berbasis **Clean Architecture** (Controller-Service-Repository).
+
+## Referensi Wajib (Docs)
+- Seluruh agen **WAJIB** membaca dan merujuk ke direktori `docs/` (khususnya `docs/00-project-rules.md`).
+- Dokumen di `docs/` adalah kebenaran mutlak (Source of Truth). Jika ada perubahan *edge case*, perbarui file `.md` yang bersangkutan.
 
 ## Batas Repository
 

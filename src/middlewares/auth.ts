@@ -10,7 +10,7 @@ export const requireAuth = (
 	next: NextFunction,
 ) => {
 	const authHeader = req.headers.authorization;
-	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+	if (!authHeader?.startsWith("Bearer ")) {
 		return res
 			.status(401)
 			.json(errorResponse("Unauthorized: Missing or invalid token"));
@@ -21,7 +21,7 @@ export const requireAuth = (
 		const decoded = jwt.verify(token, JWT_SECRET);
 		(req as any).user = decoded;
 		next();
-	} catch (error) {
+	} catch (_error) {
 		return res
 			.status(401)
 			.json(errorResponse("Unauthorized: Invalid or expired token"));

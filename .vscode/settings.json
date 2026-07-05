@@ -8,5 +8,8 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "[markdown]": {
     "editor.defaultFormatter": "vscode.markdown-language-features"
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }

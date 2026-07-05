@@ -2,7 +2,10 @@
 
 Dokumen instruksi ketat untuk AI Agent yang melakukan modifikasi kode pada repositori **InSpectraServer**.
 
-## 1. Arsitektur RESTful API & Validasi
+## 1. Arsitektur RESTful API & Dokumentasi
+- Agen **wajib** membaca panduan dari direktori `docs/` sebelum memulai pengembangan.
+- Jika ada penambahan skema Prisma atau endpoint, pastikan dokumentasi Swagger, OpenAPI, dan file `*.http` untuk VS Code REST Client diperbarui.
+- Update `docs/*.md` untuk setiap ada *edge case* baru yang berdampak pada infrastruktur atau API kontrak.
 
 Setiap API **wajib** mengimplementasikan pola yang sangat ketat untuk input data:
 

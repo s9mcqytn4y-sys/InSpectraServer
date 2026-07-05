@@ -16,13 +16,13 @@ export const createBatch = async (
 };
 
 export const getBatches = async (
-	req: Request,
+	_req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
 		const batches = await cuttingService.getBatches();
-		res.json(successResponse(batches));
+		res.json(successResponse(batches, { count: batches.length }));
 	} catch (error) {
 		next(error);
 	}

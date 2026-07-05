@@ -29,13 +29,13 @@ export const submitDefect = async (
 };
 
 export const getSessions = async (
-	req: Request,
+	_req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
 		const sessions = await checksheetService.getSessions();
-		res.json(successResponse(sessions));
+		res.json(successResponse(sessions, { count: sessions.length }));
 	} catch (error) {
 		next(error);
 	}

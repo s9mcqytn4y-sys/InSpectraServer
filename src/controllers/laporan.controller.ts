@@ -16,13 +16,13 @@ export const createLaporan = async (
 };
 
 export const getLaporan = async (
-	req: Request,
+	_req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
 		const laporanList = await laporanService.getLaporan();
-		res.json(successResponse(laporanList));
+		res.json(successResponse(laporanList, { count: laporanList.length }));
 	} catch (error) {
 		next(error);
 	}

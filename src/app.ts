@@ -7,14 +7,13 @@ import express, {
 } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import pinoHttp from "pino-http";
 import { setupSwagger } from "./config/swagger";
 import { env } from "./env";
 import { errorResponse } from "./utils/ApiResponse";
 import { logger } from "./utils/logger";
 
 const app = express();
-const PORT = env.PORT;
+const _PORT = env.PORT;
 
 // Security Middlewares
 app.use(helmet());
@@ -47,7 +46,7 @@ app.use(limiter);
 
 // Removed duplicate express.json and pinoHttp
 // Health check endpoint
-app.get("/api/v1/health", (req: Request, res: Response) => {
+app.get("/api/v1/health", (_req: Request, res: Response) => {
 	res.json({
 		status: "success",
 		metadata: { timestamp: new Date().toISOString() },
@@ -69,12 +68,12 @@ app.use("/api/v1/laporan", laporanRoutes);
 app.use("/api/v1/attendance", attendanceRoutes);
 
 // 404 Handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
 	res.status(404).json(errorResponse("Route not found"));
 });
 
 // Global Error Handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	logger.error(err);
 	res.status(500).json(errorResponse(err.message || "Internal Server Error"));
 });

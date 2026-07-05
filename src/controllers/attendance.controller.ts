@@ -16,7 +16,7 @@ export const createEmployee = async (
 };
 
 export const getEmployees = async (
-	req: Request,
+	_req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
