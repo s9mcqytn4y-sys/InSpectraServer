@@ -56,6 +56,13 @@ npm run build
 npm start
 ```
 
+### Docker
+Anda juga dapat menggunakan Docker untuk mempermudah eksekusi lingkungan:
+```bash
+docker-compose up -d --build
+```
+Aplikasi backend dan database PostgreSQL akan di-build dan dijalankan secara terisolasi.
+
 ## 📖 Dokumentasi API
 
 Setelah server berjalan, dokumentasi interaktif Swagger UI akan tersedia di:

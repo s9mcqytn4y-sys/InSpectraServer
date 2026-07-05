@@ -5,7 +5,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model MasterPart {
@@ -272,6 +271,7 @@ model e_defect_checksheet {
   nama_defect_snapshot     String
   kategori                 kategori_defect_inspectra
   jumlah                   Int                        @default(0)
+  fotoUrl                  String?                    @map("foto_url")
   dibuat_pada              DateTime                   @default(now()) @db.Timestamptz(6)
   diperbarui_pada          DateTime                   @default(now()) @db.Timestamptz(6)
   m_defect                 MasterDefect               @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)

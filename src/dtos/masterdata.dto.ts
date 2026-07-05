@@ -60,3 +60,11 @@ export const createDefectSchema = z.object({
 			.optional(),
 	}),
 });
+
+export const getMasterDataQuerySchema = z.object({
+	query: z.object({
+		page: z.string().regex(/^\d+$/).optional(),
+		limit: z.string().regex(/^\d+$/).optional(),
+		search: z.string().optional(),
+	}),
+});

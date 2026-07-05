@@ -26,3 +26,8 @@ Pengembangan komponen frontend untuk QC dan Produksi harus tangguh (*robust*):
 - **Integritas Input**: Front-end wajib memvalidasi data menggunakan Zod *schema* sebelum form dikirimkan, sehingga menghasilkan perlindungan berlapis (di level klien dan server) dan meminimalisir *round-trip* tak perlu.
 - **Optimistic UI Updates**: Segala tindakan mutasi (seperti menambahkan *Defect* pada *Checksheet*) harus langsung tercermin di UI sebelum server merespons, untuk menciptakan persepsi aplikasi yang seketika (*instant*).
 
+## 5. Fitur Baru: Upload, Paginasi, & Ekspor
+- **File Upload Management**: Komponen upload foto (misalnya untuk defect) harus mendukung *drag-and-drop* dengan *preview* lokal menggunakan `URL.createObjectURL()`. Tampilkan *progress bar* yang responsif saat upload (`/api/v1/upload`), lalu simpan *url* balikan ke field `fotoUrl`.
+- **Paginasi & Pencarian (Server-side)**: Data volume besar seperti Master Data dan Laporan ditarik dengan implementasi *Pagination* (contoh: `useInfiniteQuery` untuk mobile atau tabel berhalaman untuk desktop). Parameter pencarian (`search`) di-debounce selama ~300ms untuk mencegah *spamming* ke server.
+- **Ekspor Excel**: Sediakan tombol *Export Laporan* yang jelas (ikon unduh) yang akan mengunduh format `.xlsx` (dari `/api/v1/laporan/export`). Berikan indikasi loading saat server sedang men-generate file.
+

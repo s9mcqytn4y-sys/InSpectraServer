@@ -5,6 +5,7 @@ import {
 	createDefectSchema,
 	createMaterialSchema,
 	createPartSchema,
+	getMasterDataQuerySchema,
 } from "../dtos/masterdata.dto";
 import { validate } from "../middlewares/validate";
 
@@ -23,11 +24,31 @@ const router = Router();
  *   get:
  *     summary: Mendapatkan semua daftar master part
  *     tags: [MasterData]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword
  *     responses:
  *       200:
  *         description: Berhasil mendapatkan daftar part
  */
-router.get("/parts", masterDataController.getParts);
+router.get(
+	"/parts",
+	validate(getMasterDataQuerySchema),
+	masterDataController.getParts,
+);
 
 /**
  * @swagger
@@ -78,11 +99,31 @@ router.post(
  *   get:
  *     summary: Mendapatkan semua daftar material
  *     tags: [MasterData]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword
  *     responses:
  *       200:
  *         description: Berhasil mendapatkan daftar material
  */
-router.get("/materials", masterDataController.getMaterials);
+router.get(
+	"/materials",
+	validate(getMasterDataQuerySchema),
+	masterDataController.getMaterials,
+);
 
 /**
  * @swagger
@@ -129,11 +170,31 @@ router.post(
  *   get:
  *     summary: Mendapatkan semua daftar jenis defect
  *     tags: [MasterData]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search keyword
  *     responses:
  *       200:
  *         description: Berhasil mendapatkan daftar defect
  */
-router.get("/defects", masterDataController.getDefects);
+router.get(
+	"/defects",
+	validate(getMasterDataQuerySchema),
+	masterDataController.getDefects,
+);
 
 /**
  * @swagger

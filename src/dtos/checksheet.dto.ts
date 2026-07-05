@@ -18,6 +18,7 @@ export const submitDefectSchema = z.object({
 		nama_defect_snapshot: z.string().min(1, "Nama defect wajib diisi"),
 		kategori: z.string().min(1, "Kategori wajib diisi"),
 		jumlah: z.number().int().min(1, "Kuantitas minimal 1"),
+		fotoUrl: z.string().optional(),
 	}),
 });
 

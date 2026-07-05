@@ -22,3 +22,13 @@ export const createLaporanDetailSchema = z.object({
 		ng: z.number().int().min(0).default(0),
 	}),
 });
+
+export const getLaporanQuerySchema = z.object({
+	query: z.object({
+		page: z.string().regex(/^\d+$/).optional(),
+		limit: z.string().regex(/^\d+$/).optional(),
+		search: z.string().optional(),
+		startDate: z.string().datetime().optional(),
+		endDate: z.string().datetime().optional(),
+	}),
+});

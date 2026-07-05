@@ -3,13 +3,31 @@ import * as masterDataService from "../services/masterdata.service";
 import { successResponse } from "../utils/ApiResponse";
 
 export const getParts = async (
-	_req: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const parts = await masterDataService.getParts();
-		res.json(successResponse(parts, { count: parts.length }));
+		const page = req.query.page
+			? parseInt(req.query.page as string, 10)
+			: undefined;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: undefined;
+		const search = req.query.search as string | undefined;
+
+		const result = await masterDataService.getParts({ page, limit, search });
+		res.json(
+			successResponse(result.data, {
+				count: result.data.length,
+				pagination: {
+					total: result.total,
+					page: result.page,
+					limit: result.limit,
+					totalPages: result.totalPages,
+				},
+			}),
+		);
 	} catch (error) {
 		next(error);
 	}
@@ -29,13 +47,35 @@ export const createPart = async (
 };
 
 export const getMaterials = async (
-	_req: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const materials = await masterDataService.getMaterials();
-		res.json(successResponse(materials, { count: materials.length }));
+		const page = req.query.page
+			? parseInt(req.query.page as string, 10)
+			: undefined;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: undefined;
+		const search = req.query.search as string | undefined;
+
+		const result = await masterDataService.getMaterials({
+			page,
+			limit,
+			search,
+		});
+		res.json(
+			successResponse(result.data, {
+				count: result.data.length,
+				pagination: {
+					total: result.total,
+					page: result.page,
+					limit: result.limit,
+					totalPages: result.totalPages,
+				},
+			}),
+		);
 	} catch (error) {
 		next(error);
 	}
@@ -55,13 +95,31 @@ export const createMaterial = async (
 };
 
 export const getDefects = async (
-	_req: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const defects = await masterDataService.getDefects();
-		res.json(successResponse(defects, { count: defects.length }));
+		const page = req.query.page
+			? parseInt(req.query.page as string, 10)
+			: undefined;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: undefined;
+		const search = req.query.search as string | undefined;
+
+		const result = await masterDataService.getDefects({ page, limit, search });
+		res.json(
+			successResponse(result.data, {
+				count: result.data.length,
+				pagination: {
+					total: result.total,
+					page: result.page,
+					limit: result.limit,
+					totalPages: result.totalPages,
+				},
+			}),
+		);
 	} catch (error) {
 		next(error);
 	}

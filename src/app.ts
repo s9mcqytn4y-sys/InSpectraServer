@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files for uploads
+app.use("/uploads", express.static(path.join(process.cwd(), "public/uploads")));
 app.use("/public", express.static(path.join(process.cwd(), "public")));
 
 // Setup Swagger UI
@@ -57,8 +58,10 @@ app.get("/api/v1/health", (_req: Request, res: Response) => {
 import attendanceRoutes from "./routes/attendance.routes";
 import checksheetRoutes from "./routes/checksheet.routes";
 import cuttingRoutes from "./routes/cutting.routes";
+import dashboardRoutes from "./routes/dashboard.routes";
 import laporanRoutes from "./routes/laporan.routes";
 import masterDataRoutes from "./routes/masterdata.routes";
+import uploadRoutes from "./routes/upload.routes";
 
 // Import Routes
 app.use("/api/v1/masterdata", masterDataRoutes);
@@ -66,6 +69,8 @@ app.use("/api/v1/checksheet", checksheetRoutes);
 app.use("/api/v1/cutting", cuttingRoutes);
 app.use("/api/v1/laporan", laporanRoutes);
 app.use("/api/v1/attendance", attendanceRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/upload", uploadRoutes);
 
 // 404 Handler
 app.use((_req: Request, res: Response) => {

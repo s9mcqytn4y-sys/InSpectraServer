@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.git
+.gitignore
+.vscode
+public/uploads/*
+!public/uploads/.gitkeep
+docker-compose.yml
+Dockerfile
+README.md
+docs/

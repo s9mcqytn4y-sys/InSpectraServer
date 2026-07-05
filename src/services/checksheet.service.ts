@@ -72,6 +72,7 @@ export const submitDefect = async (data: {
 	nama_defect_snapshot: string;
 	kategori: any;
 	jumlah: number;
+	fotoUrl?: string;
 }) => {
 	return await prisma.e_defect_checksheet.create({
 		data: {
@@ -80,6 +81,7 @@ export const submitDefect = async (data: {
 			nama_defect_snapshot: data.nama_defect_snapshot,
 			kategori: data.kategori,
 			jumlah: data.jumlah,
+			fotoUrl: data.fotoUrl,
 		},
 	});
 };

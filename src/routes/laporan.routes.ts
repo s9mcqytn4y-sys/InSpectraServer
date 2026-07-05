@@ -3,6 +3,7 @@ import * as laporanController from "../controllers/laporan.controller";
 import {
 	createLaporanDetailSchema,
 	createLaporanSchema,
+	getLaporanQuerySchema,
 } from "../dtos/laporan.dto";
 import { validate } from "../middlewares/validate";
 
@@ -16,15 +17,69 @@ const router = Router();
 
 /**
  * @swagger
+ * /api/v1/laporan/export:
+ *   get:
+ *     summary: Export production reports to Excel
+ *     tags: [Laporan]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *     responses:
+ *       200:
+ *         description: Excel file generated successfully
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+router.get("/export", laporanController.exportLaporan);
+
+/**
+ * @swagger
  * /api/v1/laporan:
  *   get:
  *     summary: Get all production reports
  *     tags: [Laporan]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by tipe proses
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
  *     responses:
  *       200:
  *         description: A list of production reports
  */
-router.get("/", laporanController.getLaporan);
+router.get("/", validate(getLaporanQuerySchema), laporanController.getLaporan);
 
 /**
  * @swagger

@@ -4,12 +4,28 @@ import type {
 } from "@prisma/client";
 import prisma from "../config/prisma";
 
-export const getParts = async () => {
-	// Frontend friendly: order by latest, select relevant fields
-	return await prisma.masterPart.findMany({
-		where: { aktif: true },
-		orderBy: { dibuat_pada: "desc" },
-	});
+export const getParts = async (
+	params: { page?: number; limit?: number; search?: string } = {},
+) => {
+	const { page = 1, limit = 10, search } = params;
+	const skip = (page - 1) * limit;
+
+	const where: any = { aktif: true };
+	if (search) {
+		where.name = { contains: search, mode: "insensitive" };
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.masterPart.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { dibuat_pada: "desc" },
+		}),
+		prisma.masterPart.count({ where }),
+	]);
+
+	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 export const createPart = async (data: {
@@ -38,12 +54,29 @@ export const createPart = async (data: {
 	});
 };
 
-export const getMaterials = async () => {
-	return await prisma.masterMaterial.findMany({
-		where: { aktif: true },
-		orderBy: { dibuat_pada: "desc" },
-		include: { m_supplier: true },
-	});
+export const getMaterials = async (
+	params: { page?: number; limit?: number; search?: string } = {},
+) => {
+	const { page = 1, limit = 10, search } = params;
+	const skip = (page - 1) * limit;
+
+	const where: any = { aktif: true };
+	if (search) {
+		where.name = { contains: search, mode: "insensitive" };
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.masterMaterial.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { dibuat_pada: "desc" },
+			include: { m_supplier: true },
+		}),
+		prisma.masterMaterial.count({ where }),
+	]);
+
+	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 export const createMaterial = async (data: {
@@ -68,11 +101,28 @@ export const createMaterial = async (data: {
 	});
 };
 
-export const getDefects = async () => {
-	return await prisma.masterDefect.findMany({
-		where: { aktif: true },
-		orderBy: { dibuat_pada: "desc" },
-	});
+export const getDefects = async (
+	params: { page?: number; limit?: number; search?: string } = {},
+) => {
+	const { page = 1, limit = 10, search } = params;
+	const skip = (page - 1) * limit;
+
+	const where: any = { aktif: true };
+	if (search) {
+		where.name = { contains: search, mode: "insensitive" };
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.masterDefect.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { dibuat_pada: "desc" },
+		}),
+		prisma.masterDefect.count({ where }),
+	]);
+
+	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 };
 
 export const createDefect = async (data: {

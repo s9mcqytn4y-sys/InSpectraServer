@@ -42,9 +42,40 @@ export const createLaporanDetail = async (data: {
 	});
 };
 
-export const getLaporan = async () => {
-	return await prisma.e_laporan_produksi.findMany({
-		orderBy: { tanggal: "desc" },
-		include: { e_laporan_produksi_detail: true },
-	});
+export const getLaporan = async (
+	params: {
+		page?: number;
+		limit?: number;
+		search?: string;
+		startDate?: Date;
+		endDate?: Date;
+	} = {},
+) => {
+	const { page = 1, limit = 10, search, startDate, endDate } = params;
+	const skip = (page - 1) * limit;
+
+	const where: any = {};
+
+	if (search) {
+		where.tipe_proses = { contains: search, mode: "insensitive" };
+	}
+
+	if (startDate || endDate) {
+		where.tanggal = {};
+		if (startDate) where.tanggal.gte = startDate;
+		if (endDate) where.tanggal.lte = endDate;
+	}
+
+	const [data, total] = await Promise.all([
+		prisma.e_laporan_produksi.findMany({
+			where,
+			skip,
+			take: limit,
+			orderBy: { tanggal: "desc" },
+			include: { e_laporan_produksi_detail: true },
+		}),
+		prisma.e_laporan_produksi.count({ where }),
+	]);
+
+	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 };

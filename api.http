@@ -163,5 +163,20 @@ Content-Type: application/json
   "ukuran_cutting_cm": 150.5,
   "qty_layer_ok": 10,
   "qty_layer_ng": 1,
-  "waste_panjang_cm": 2.5
 }
+
+### ========================================
+### DASHBOARD & ANALYTICS
+### ========================================
+
+### Get Top Defects
+GET {{baseUrl}}/dashboard/top-defects
+# Authorization: Bearer {{authToken}}
+
+### Get OEE Metrics
+GET {{baseUrl}}/dashboard/oee-metrics
+# Authorization: Bearer {{authToken}}
+
+### Get NG Rate (Reject Ratio)
+GET {{baseUrl}}/dashboard/ng-rate
+# Authorization: Bearer {{authToken}}

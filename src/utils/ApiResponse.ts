@@ -3,6 +3,12 @@ export interface ApiResponse<T> {
 	metadata: {
 		timestamp: string;
 		count?: number;
+		pagination?: {
+			total: number;
+			page: number;
+			limit: number;
+			totalPages: number;
+		};
 	};
 	data?: T;
 	message?: string;
@@ -10,7 +16,15 @@ export interface ApiResponse<T> {
 
 export const successResponse = <T>(
 	data: T,
-	metadataOptions?: { count?: number },
+	metadataOptions?: {
+		count?: number;
+		pagination?: {
+			total: number;
+			page: number;
+			limit: number;
+			totalPages: number;
+		};
+	},
 ): ApiResponse<T> => {
 	return {
 		status: "success",

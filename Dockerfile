@@ -1,35 +1,43 @@
+# Build stage
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
+COPY package*.json ./
+
 # Install dependencies
-COPY package.json package-lock.json ./
 RUN npm ci
 
-# Generate Prisma client
-COPY prisma ./prisma
+# Copy source code and prisma
+COPY . .
+
+# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy source code and build
-COPY . .
+# Build TypeScript
 RUN npm run build
 
-# Production image
+# Production stage
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy built artifacts and production dependencies
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-
-# Create directory for uploads
-RUN mkdir -p /app/public/uploads
-
+# Set environment
 ENV NODE_ENV=production
-ENV PORT=3000
 
+# Copy built artifacts and necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
+
+# Ensure public/uploads exists
+RUN mkdir -p public/uploads
+
+# Expose port
 EXPOSE 3000
 
+# Start server
 CMD ["npm", "start"]
