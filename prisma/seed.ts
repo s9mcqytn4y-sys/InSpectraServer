@@ -131,92 +131,34 @@ async function main() {
 	console.log("Seeded Master Defects.");
 
 	// 4. Seed Slot Waktu
-	const slots = [
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_1",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "08.00 - 09.00",
-			urutan: 1,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_2",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "09.00 - 10.00",
-			urutan: 2,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_3",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "10.00 - 11.00",
-			urutan: 3,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_4",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "11.00 - 12.00",
-			urutan: 4,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_5",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "13.00 - 14.00",
-			urutan: 5,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_6",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "14.00 - 15.00",
-			urutan: 6,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_7",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "15.00 - 16.00",
-			urutan: 7,
-		},
-		{
-			kode_slot: "PRESS_SHIFT_1_SLOT_8",
-			tipe_proses: "PRESS" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "16.00 - 17.00",
-			urutan: 8,
-		},
-		{
-			kode_slot: "CUTTING_SHIFT_1_SLOT_1",
-			tipe_proses: "CUTTING" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "08.00 - 09.00",
-			urutan: 1,
-		},
-		{
-			kode_slot: "CUTTING_SHIFT_1_SLOT_2",
-			tipe_proses: "CUTTING" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "09.00 - 10.00",
-			urutan: 2,
-		},
-		{
-			kode_slot: "CUTTING_SHIFT_1_SLOT_3",
-			tipe_proses: "CUTTING" as tipe_proses_inspectra,
-			nama_shift: "SHIFT_1",
-			label_waktu: "10.00 - 11.00",
-			urutan: 3,
-		},
+	const processes: tipe_proses_inspectra[] = ["PRESS", "CUTTING", "SEWING", "QUALITY_CONTROL"];
+	const slotDefinitions = [
+		{ name: "SLOT_1", label: "08:00 - 12:00", urutan: 1 },
+		{ name: "SLOT_2", label: "13:00 - 15:30", urutan: 2 },
+		{ name: "SLOT_3", label: "16:00 - 17:00", urutan: 3 },
+		{ name: "OVERTIME", label: "17:00 - Selesai", urutan: 4 },
 	];
 
-	for (const slot of slots) {
-		await prisma.m_slot_waktu.upsert({
-			where: { kode_slot: slot.kode_slot },
-			update: {},
-			create: slot,
-		});
+	for (const proses of processes) {
+		for (const def of slotDefinitions) {
+			const kode_slot = `${proses}_SHIFT_1_${def.name}`;
+			await prisma.m_slot_waktu.upsert({
+				where: { kode_slot: kode_slot },
+				update: {
+					label_waktu: def.label,
+					urutan: def.urutan,
+					aktif: true
+				},
+				create: {
+					kode_slot: kode_slot,
+					tipe_proses: proses,
+					nama_shift: "SHIFT_1",
+					label_waktu: def.label,
+					urutan: def.urutan,
+					aktif: true
+				},
+			});
+		}
 	}
 	console.log("Seeded Slot Waktu.");
 

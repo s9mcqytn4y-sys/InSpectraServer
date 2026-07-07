@@ -5,14 +5,21 @@ import type {
 import prisma from "../config/prisma";
 
 export const getParts = async (
-	params: { page?: number; limit?: number; search?: string } = {},
+	params: { page?: number; limit?: number; search?: string; commodity?: string } = {},
 ) => {
-	const { page = 1, limit = 10, search } = params;
+	const { page = 1, limit = 10, search, commodity } = params;
 	const skip = (page - 1) * limit;
 
 	const where: any = { aktif: true };
 	if (search) {
-		where.name = { contains: search, mode: "insensitive" };
+		where.OR = [
+			{ name: { contains: search, mode: "insensitive" } },
+			{ uniqNo: { contains: search, mode: "insensitive" } },
+			{ part_no: { contains: search, mode: "insensitive" } },
+		];
+	}
+	if (commodity) {
+		where.commodity = commodity;
 	}
 
 	const [data, total] = await Promise.all([
@@ -21,6 +28,18 @@ export const getParts = async (
 			skip,
 			take: limit,
 			orderBy: { dibuat_pada: "desc" },
+			include: {
+				m_part_image: {
+					include: { m_media_asset: true },
+				},
+				m_part_defect: {
+					where: { aktif: true },
+					include: {
+						m_defect: { select: { id_defect: true, name: true, category: true } },
+					},
+					orderBy: { urutan: "asc" },
+				},
+			},
 		}),
 		prisma.masterPart.count({ where }),
 	]);

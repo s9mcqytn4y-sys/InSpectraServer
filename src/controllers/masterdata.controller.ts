@@ -15,8 +15,9 @@ export const getParts = async (
 			? parseInt(req.query.limit as string, 10)
 			: undefined;
 		const search = req.query.search as string | undefined;
+		const commodity = req.query.commodity as string | undefined;
 
-		const result = await masterDataService.getParts({ page, limit, search });
+		const result = await masterDataService.getParts({ page, limit, search, commodity });
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,

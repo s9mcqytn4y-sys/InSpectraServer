@@ -40,3 +40,47 @@ export const getNgRate = async (
 		next(error);
 	}
 };
+
+/**
+ * GET /api/v1/dashboard/pareto
+ * Pareto defect dikelompokkan per 4 slot waktu.
+ */
+export const getPareto = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const top_n = req.query.top_n ? parseInt(req.query.top_n as string, 10) : 5;
+		const result = await dashboardService.getPareto({
+			startDate: req.query.startDate as string,
+			endDate: req.query.endDate as string,
+			tipe_proses: req.query.tipe_proses as string,
+			top_n,
+		});
+		res.json(successResponse(result));
+	} catch (error) {
+		next(error);
+	}
+};
+
+/**
+ * GET /api/v1/dashboard/trends
+ * Tren rasio NG per hari dan per slot waktu.
+ */
+export const getTrends = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const result = await dashboardService.getTrends({
+			startDate: req.query.startDate as string,
+			endDate: req.query.endDate as string,
+			tipe_proses: req.query.tipe_proses as string,
+		});
+		res.json(successResponse(result));
+	} catch (error) {
+		next(error);
+	}
+};

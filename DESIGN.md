@@ -31,3 +31,85 @@ Pengembangan komponen frontend untuk QC dan Produksi harus tangguh (*robust*):
 - **Paginasi & Pencarian (Server-side)**: Data volume besar seperti Master Data dan Laporan ditarik dengan implementasi *Pagination* (contoh: `useInfiniteQuery` untuk mobile atau tabel berhalaman untuk desktop). Parameter pencarian (`search`) di-debounce selama ~300ms untuk mencegah *spamming* ke server.
 - **Ekspor Excel**: Sediakan tombol *Export Laporan* yang jelas (ikon unduh) yang akan mengunduh format `.xlsx` (dari `/api/v1/laporan/export`). Berikan indikasi loading saat server sedang men-generate file.
 
+## 6. E-Checksheet: Batch Submit & Slot Waktu (Fase Transaksi)
+
+Modul ini adalah inti dari InSpectra — data kualitas real-time dari lantai produksi.
+
+### 6.1 Kontrak API: `POST /api/v1/checksheet/submit-batch`
+
+Frontend (mobile/tablet Android) mengirim **satu request JSON** yang memuat seluruh sesi pemeriksaan. Server memproses semuanya dalam satu *database transaction* atomik.
+
+**Struktur Payload:**
+```json
+{
+  "session": {
+    "tipe_proses": "PRESS",
+    "nama_shift": "SHIFT_1",
+    "nama_operator": "Budi Santoso",
+    "nama_line": "LINE-A"
+  },
+  "items": [
+    {
+      "uniq_no": "PR-001",
+      "jumlah_diperiksa": 100,
+      "jumlah_ok": 95,
+      "jumlah_ng": 5,
+      "defects": [
+        {
+          "id_defect": "D01",
+          "nama_defect_snapshot": "Goresan Dalam (Scratch)",
+          "kategori": "PROSES",
+          "jumlah": 3,
+          "fotoUrl": "/public/uploads/foto-defect-123.jpg",
+          "slots": [
+            { "slot_waktu_id": "<uuid-PRESS_SHIFT_1_SLOT_1>", "jumlah": 2 },
+            { "slot_waktu_id": "<uuid-PRESS_SHIFT_1_SLOT_2>", "jumlah": 1 }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Business Logic Validasi (Server-side):**
+- `jumlah_ok + jumlah_ng ≤ jumlah_diperiksa` per item
+- Total `jumlah` semua defect ≤ `jumlah_ng` item
+- Total `jumlah` semua slot dalam satu defect **harus sama persis** dengan `jumlah` defect
+- Semua `uniq_no` harus valid di `m_part` dan `aktif: true`
+- Semua `id_defect` harus valid di `m_defect` dan `aktif: true`
+
+### 6.2 Desain 4 Time Slots
+
+Setiap proses (PRESS, CUTTING, SEWING, QUALITY_CONTROL) memiliki 4 slot waktu dalam satu shift:
+
+| Kode Slot | Label | Keterangan |
+|---|---|---|
+| `{PROSES}_SHIFT_1_SLOT_1` | 08:00 - 12:00 | Sesi pagi |
+| `{PROSES}_SHIFT_1_SLOT_2` | 13:00 - 15:30 | Sesi siang setelah makan |
+| `{PROSES}_SHIFT_1_SLOT_3` | 16:00 - 17:00 | Sesi sore |
+| `{PROSES}_SHIFT_1_OVERTIME` | 17:00 - Selesai | Lembur |
+
+**Cara frontend mendapatkan daftar slot:**
+```
+GET /api/v1/checksheet/slots?tipe_proses=PRESS
+```
+
+### 6.3 Desain Dashboard: Pareto & Trends
+
+**Pareto Chart (`GET /api/v1/dashboard/pareto`):**
+- Mengembalikan Top-N defect beserta persentase dari total NG
+- Setiap defect menyertakan breakdown `per_slot` (berapa NG di slot 1, 2, 3, overtime)
+- Frontend menggunakan data ini untuk *Stacked Bar Chart* sekaligus *Pareto Line*
+
+**Trend NG Rate (`GET /api/v1/dashboard/trends`):**
+- Mengembalikan NG rate per hari untuk grafik garis harian
+- Disertai `per_slot` (breakdown slot per hari) untuk overlay grafik
+- Berguna mendeteksi: "Senin jam 08-12 selalu NG tinggi → investigasi mesin"
+
+### 6.4 Rekomendasi Komponen Frontend
+
+- **`<ChecksheetForm />`**: Form multi-step offline-capable. Step 1: pilih proses & operator. Step 2: input item per item. Step 3: input defect per item + foto + alokasi slot. Step 4: review & submit.
+- **`<ParetoChart />`**: Kombinasi Recharts `BarChart` + `Line` (kumulatif %). Gunakan `per_slot` sebagai `stackId` untuk stacked bar.
+- **`<NgTrendChart />`**: Line chart per hari dengan toggle per-slot overlay.
+- **Offline Support**: Simpan payload batch di `IndexedDB`. Saat online, kirim antrian. UUID `id_sesi` di-generate di klien agar sinkronisasi idempoten.
