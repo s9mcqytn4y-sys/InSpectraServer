@@ -17,7 +17,17 @@ const _PORT = env.PORT;
 
 // Security Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(
+	cors({
+		origin: [
+			"http://localhost:3000",
+			"http://localhost:3001",
+			"http://localhost:8000",
+			"http://inspectra-frontend:3000",
+		],
+		credentials: true,
+	}),
+);
 
 import pinoHttp from "pino-http";
 
@@ -28,8 +38,8 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging
 app.use(pinoHttp({ logger }));
 
-// Serve static files for uploads
-app.use("/uploads", express.static(path.join(process.cwd(), "public/uploads")));
+// Serve static files for uploads (foto defect, part images)
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/public", express.static(path.join(process.cwd(), "public")));
 
 // Setup Swagger UI

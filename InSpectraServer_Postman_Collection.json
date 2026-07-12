@@ -1,9 +1,28 @@
 {
 	"info": {
 		"name": "InSpectraServer API",
+		"description": "Koleksi lengkap endpoint InSpectra Quality Control Backend",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api/v1"
+		}
+	],
 	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/health" }
+					}
+				}
+			]
+		},
 		{
 			"name": "Master Data",
 			"item": [
@@ -11,36 +30,57 @@
 					"name": "Get Parts",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "http://localhost:3000/api/v1/masterdata/parts",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "3000",
-							"path": ["api", "v1", "masterdata", "parts"]
-						}
+						"url": { "raw": "{{baseUrl}}/masterdata/parts" }
 					}
 				},
 				{
 					"name": "Create Part",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"uniqNo\": \"P001\",\n  \"name\": \"Part A\",\n  \"commodity\": \"PRESS\"\n}"
 						},
-						"url": {
-							"raw": "http://localhost:3000/api/v1/masterdata/parts",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "3000",
-							"path": ["api", "v1", "masterdata", "parts"]
-						}
+						"url": { "raw": "{{baseUrl}}/masterdata/parts" }
+					}
+				},
+				{
+					"name": "Get Materials",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masterdata/materials" }
+					}
+				},
+				{
+					"name": "Create Material",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"MAT-001\",\n  \"name\": \"Material A\",\n  \"kategori_material\": \"FABRIC\",\n  \"satuan\": \"ROLL\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masterdata/materials" }
+					}
+				},
+				{
+					"name": "Get Defects",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/masterdata/defects" }
+					}
+				},
+				{
+					"name": "Create Defect",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_defect\": \"DEF-001\",\n  \"name\": \"Goresan\",\n  \"category\": \"PROSES\",\n  \"deskripsi\": \"Defect goresan permukaan\",\n  \"severity_default\": 2\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/masterdata/defects" }
 					}
 				}
 			]
@@ -52,13 +92,98 @@
 					"name": "Get Sessions",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "http://localhost:3000/api/v1/checksheet/sessions",
-							"protocol": "http",
-							"host": ["localhost"],
-							"port": "3000",
-							"path": ["api", "v1", "checksheet", "sessions"]
-						}
+						"url": { "raw": "{{baseUrl}}/checksheet/sessions" }
+					}
+				},
+				{
+					"name": "Submit Batch",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"session\": {\n    \"idempotency_key\": \"unique-uuid-here\",\n    \"tipe_proses\": \"PRESS\",\n    \"nama_shift\": \"SHIFT_1\",\n    \"nama_operator\": \"Budi\"\n  },\n  \"items\": [\n    {\n      \"uniq_no\": \"PART-001\",\n      \"jumlah_diperiksa\": 100,\n      \"jumlah_ok\": 95,\n      \"jumlah_ng\": 5,\n      \"defects\": [\n        {\n          \"id_defect\": \"DEF-001\",\n          \"nama_defect_snapshot\": \"Goresan\",\n          \"kategori\": \"PROSES\",\n          \"jumlah\": 5\n        }\n      ]\n    }\n  ]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/checksheet/submit-batch" }
+					}
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Top Defects",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/top-defects" } }
+				},
+				{
+					"name": "OEE Metrics",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/oee-metrics" } }
+				},
+				{
+					"name": "NG Rate",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/ng-rate" } }
+				},
+				{
+					"name": "Pareto (PRESS)",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/pareto?tipe_proses=PRESS&top_n=5" } }
+				},
+				{
+					"name": "Trend Harian",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/trends?tipe_proses=PRESS" } }
+				},
+				{
+					"name": "Q-Gate Combo Chart",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/trend-combo?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z" } }
+				},
+				{
+					"name": "Q-Gate Pie Distribution",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/pie-distribution?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z" } }
+				},
+				{
+					"name": "Q-Gate Top 3 Defects",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/dashboard/top3-defects?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z&top_n=3" } }
+				}
+			]
+		},
+		{
+			"name": "Laporan",
+			"item": [
+				{
+					"name": "Get Laporan",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/laporan" } }
+				},
+				{
+					"name": "Create Laporan",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tanggal\": \"2026-07-05T00:00:00Z\",\n  \"tipe_proses\": \"PRESS\",\n  \"mp_direct\": 10,\n  \"mp_indirect\": 2,\n  \"jkn_hour\": 8\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/laporan" }
+					}
+				}
+			]
+		},
+		{
+			"name": "Cutting",
+			"item": [
+				{
+					"name": "Get Cutting Batches",
+					"request": { "method": "GET", "url": { "raw": "{{baseUrl}}/cutting/batches" } }
+				},
+				{
+					"name": "Create Cutting Batch",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_sesi\": \"00000000-0000-0000-0000-000000000000\",\n  \"material_id\": \"00000000-0000-0000-0000-000000000000\",\n  \"ukuran_cutting_cm\": 150.5,\n  \"qty_layer_ok\": 10,\n  \"qty_layer_ng\": 1\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/cutting/batches" }
 					}
 				}
 			]
