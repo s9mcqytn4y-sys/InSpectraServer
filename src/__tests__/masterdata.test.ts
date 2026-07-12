@@ -11,6 +11,13 @@ describe("Master Data API Endpoints", () => {
 			expect(res.body.status).toBe("success");
 			expect(Array.isArray(res.body.data)).toBe(true);
 		});
+
+		it("should handle last_sync_time parameter for delta sync", async () => {
+			const res = await request(app).get("/api/v1/masterdata/parts?last_sync_time=2024-01-01T00:00:00.000Z");
+			expect(res.status).toBe(200);
+			expect(res.body.status).toBe("success");
+			expect(Array.isArray(res.body.data)).toBe(true);
+		});
 	});
 
 	describe("GET /api/v1/masterdata/materials", () => {

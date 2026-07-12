@@ -3,6 +3,7 @@ import type {
 	tipe_proses_inspectra,
 } from "@prisma/client";
 import prisma from "../config/prisma";
+import { referenceCache, CACHE_KEYS, invalidatePrefix } from "../utils/cache";
 
 export const getParts = async (
 	params: {
@@ -10,12 +11,18 @@ export const getParts = async (
 		limit?: number;
 		search?: string;
 		commodity?: string;
+		last_sync_time?: string;
 	} = {},
 ) => {
-	const { page = 1, limit = 10, search, commodity } = params;
-	const skip = (page - 1) * limit;
+	const { page = 1, limit = 10, search, commodity, last_sync_time } = params;
+	
+	const cacheKey = `${CACHE_KEYS.PARTS}_${page}_${limit}_${search || ""}_${commodity || ""}_${last_sync_time || ""}`;
+	const cached = referenceCache.get(cacheKey);
+	if (cached) return cached;
 
+	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
+	
 	if (search) {
 		where.OR = [
 			{ name: { contains: search, mode: "insensitive" } },
@@ -25,6 +32,9 @@ export const getParts = async (
 	}
 	if (commodity) {
 		where.commodity = commodity;
+	}
+	if (last_sync_time) {
+		where.diperbarui_pada = { gt: new Date(last_sync_time) };
 	}
 
 	const [data, total] = await Promise.all([
@@ -51,7 +61,9 @@ export const getParts = async (
 		prisma.masterPart.count({ where }),
 	]);
 
-	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	referenceCache.set(cacheKey, result);
+	return result;
 };
 
 export const createPart = async (data: {
@@ -65,7 +77,7 @@ export const createPart = async (data: {
 	catatan?: string;
 	kode_internal?: string;
 }) => {
-	return await prisma.masterPart.create({
+	const part = await prisma.masterPart.create({
 		data: {
 			uniqNo: data.uniqNo,
 			part_no: data.part_no,
@@ -78,6 +90,8 @@ export const createPart = async (data: {
 			kode_internal: data.kode_internal,
 		},
 	});
+	invalidatePrefix(CACHE_KEYS.PARTS);
+	return part;
 };
 
 export const updatePart = async (
@@ -93,29 +107,40 @@ export const updatePart = async (
 		kode_internal: string;
 	}>,
 ) => {
-	return await prisma.masterPart.update({
+	const part = await prisma.masterPart.update({
 		where: { uniqNo },
 		data,
 	});
+	invalidatePrefix(CACHE_KEYS.PARTS);
+	return part;
 };
 
 export const deletePart = async (uniqNo: string) => {
-	// Soft delete
-	return await prisma.masterPart.update({
+	const part = await prisma.masterPart.update({
 		where: { uniqNo },
 		data: { aktif: false },
 	});
+	invalidatePrefix(CACHE_KEYS.PARTS);
+	return part;
 };
 
 export const getMaterials = async (
-	params: { page?: number; limit?: number; search?: string } = {},
+	params: { page?: number; limit?: number; search?: string; last_sync_time?: string } = {},
 ) => {
-	const { page = 1, limit = 10, search } = params;
-	const skip = (page - 1) * limit;
+	const { page = 1, limit = 10, search, last_sync_time } = params;
+	
+	const cacheKey = `${CACHE_KEYS.MATERIALS}_${page}_${limit}_${search || ""}_${last_sync_time || ""}`;
+	const cached = referenceCache.get(cacheKey);
+	if (cached) return cached;
 
+	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
+	
 	if (search) {
 		where.name = { contains: search, mode: "insensitive" };
+	}
+	if (last_sync_time) {
+		where.diperbarui_pada = { gt: new Date(last_sync_time) };
 	}
 
 	const [data, total] = await Promise.all([
@@ -129,7 +154,9 @@ export const getMaterials = async (
 		prisma.masterMaterial.count({ where }),
 	]);
 
-	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	referenceCache.set(cacheKey, result);
+	return result;
 };
 
 export const createMaterial = async (data: {
@@ -141,7 +168,7 @@ export const createMaterial = async (data: {
 	aktif?: boolean;
 	supplier_id?: string | null;
 }) => {
-	return await prisma.masterMaterial.create({
+	const material = await prisma.masterMaterial.create({
 		data: {
 			code: data.code,
 			name: data.name,
@@ -152,6 +179,8 @@ export const createMaterial = async (data: {
 			supplier_id: data.supplier_id,
 		},
 	});
+	invalidatePrefix(CACHE_KEYS.MATERIALS);
+	return material;
 };
 
 export const updateMaterial = async (
@@ -165,29 +194,40 @@ export const updateMaterial = async (
 		supplier_id: string | null;
 	}>,
 ) => {
-	return await prisma.masterMaterial.update({
+	const material = await prisma.masterMaterial.update({
 		where: { code },
 		data,
 	});
+	invalidatePrefix(CACHE_KEYS.MATERIALS);
+	return material;
 };
 
 export const deleteMaterial = async (code: string) => {
-	// Soft delete
-	return await prisma.masterMaterial.update({
+	const material = await prisma.masterMaterial.update({
 		where: { code },
 		data: { aktif: false },
 	});
+	invalidatePrefix(CACHE_KEYS.MATERIALS);
+	return material;
 };
 
 export const getDefects = async (
-	params: { page?: number; limit?: number; search?: string } = {},
+	params: { page?: number; limit?: number; search?: string; last_sync_time?: string } = {},
 ) => {
-	const { page = 1, limit = 10, search } = params;
-	const skip = (page - 1) * limit;
+	const { page = 1, limit = 10, search, last_sync_time } = params;
+	
+	const cacheKey = `${CACHE_KEYS.DEFECTS}_${page}_${limit}_${search || ""}_${last_sync_time || ""}`;
+	const cached = referenceCache.get(cacheKey);
+	if (cached) return cached;
 
+	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
+	
 	if (search) {
 		where.name = { contains: search, mode: "insensitive" };
+	}
+	if (last_sync_time) {
+		where.diperbarui_pada = { gt: new Date(last_sync_time) };
 	}
 
 	const [data, total] = await Promise.all([
@@ -200,7 +240,9 @@ export const getDefects = async (
 		prisma.masterDefect.count({ where }),
 	]);
 
-	return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	referenceCache.set(cacheKey, result);
+	return result;
 };
 
 export const createDefect = async (data: {
@@ -210,7 +252,7 @@ export const createDefect = async (data: {
 	deskripsi?: string;
 	severity_default?: number;
 }) => {
-	return await prisma.masterDefect.create({
+	const defect = await prisma.masterDefect.create({
 		data: {
 			id_defect: data.id_defect,
 			name: data.name,
@@ -219,6 +261,8 @@ export const createDefect = async (data: {
 			severity_default: data.severity_default,
 		},
 	});
+	invalidatePrefix(CACHE_KEYS.DEFECTS);
+	return defect;
 };
 
 export const updateDefect = async (
@@ -231,16 +275,19 @@ export const updateDefect = async (
 		aktif: boolean;
 	}>,
 ) => {
-	return await prisma.masterDefect.update({
+	const defect = await prisma.masterDefect.update({
 		where: { id_defect },
 		data,
 	});
+	invalidatePrefix(CACHE_KEYS.DEFECTS);
+	return defect;
 };
 
 export const deleteDefect = async (id_defect: string) => {
-	// Soft delete
-	return await prisma.masterDefect.update({
+	const defect = await prisma.masterDefect.update({
 		where: { id_defect },
 		data: { aktif: false },
 	});
+	invalidatePrefix(CACHE_KEYS.DEFECTS);
+	return defect;
 };

@@ -16,12 +16,14 @@ export const getParts = async (
 			: undefined;
 		const search = req.query.search as string | undefined;
 		const commodity = req.query.commodity as string | undefined;
+		const last_sync_time = req.query.last_sync_time as string | undefined;
 
 		const result = await masterDataService.getParts({
 			page,
 			limit,
 			search,
 			commodity,
+			last_sync_time,
 		});
 		res.json(
 			successResponse(result.data, {
@@ -96,11 +98,13 @@ export const getMaterials = async (
 			? parseInt(req.query.limit as string, 10)
 			: undefined;
 		const search = req.query.search as string | undefined;
+		const last_sync_time = req.query.last_sync_time as string | undefined;
 
 		const result = await masterDataService.getMaterials({
 			page,
 			limit,
 			search,
+			last_sync_time,
 		});
 		res.json(
 			successResponse(result.data, {
@@ -175,8 +179,14 @@ export const getDefects = async (
 			? parseInt(req.query.limit as string, 10)
 			: undefined;
 		const search = req.query.search as string | undefined;
+		const last_sync_time = req.query.last_sync_time as string | undefined;
 
-		const result = await masterDataService.getDefects({ page, limit, search });
+		const result = await masterDataService.getDefects({
+			page,
+			limit,
+			search,
+			last_sync_time,
+		});
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,

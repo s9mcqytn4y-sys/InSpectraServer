@@ -1,135 +1,49 @@
-# DESIGN.md - UI/UX & Frontend Perspective (React JS 2026)
+# DESIGN.md - InSpectraServer (Backend Architecture & Infrastructure)
 
-Dokumen ini mendeskripsikan panduan desain dan interaksi antara **Frontend React JS (atau Next.js App Router 2026)** dengan layanan backend `InSpectraServer`. InSpectra didesain dengan visi **Modern Web Apps**, memprioritaskan estetika premium, performa tinggi, dan pengalaman pengguna yang luar biasa.
+Dokumen ini mendeskripsikan arsitektur backend, infrastruktur, dan desain sistem dari layanan `InSpectraServer`. Pengembangan berfokus pada **Hardening Input**, stabilitas data, dan API yang robust untuk melayani klien Android (Jetpack Compose). 
 
-## 1. Filosofi & Estetika Desain (UI/UX 2026)
-Antarmuka pengguna InSpectra harus terlihat sangat premium, dinamis, dan mengikuti tren desain 2026:
-- **Glassmorphism & Depth**: Penggunaan panel semi-transparan dengan efek *blur* berlapis dan bayangan lembut (*soft shadows*) untuk menciptakan kedalaman hierarki visual.
-- **Dark Mode First**: Desain optimal untuk tema gelap (Dark Mode) dengan palet warna HSL yang disesuaikan secara khusus. Hindari warna absolut (seperti merah atau biru murni). Gunakan skema monokromatik modern dengan aksen *vibrant* (misalnya *neon cyan* atau *electric purple*) pada interaksi kunci.
-- **Tipografi Modern**: Menggunakan kombinasi font Sans-Serif geometris seperti **Inter**, **Outfit**, atau **Plus Jakarta Sans** untuk memberikan kesan teknikal namun tetap *humanist*.
-- **Micro-Animations**: Setiap interaksi (hover, klik, submit) harus memberikan *feedback* visual yang mulus (transisi CSS/Framer Motion, durasi ~200-300ms).
+**Seluruh jejak integrasi atau rancangan web/frontend telah dihapus dari repositori ini sesuai direktif.**
 
-## 2. Arsitektur Komunikasi (Data Fetching)
-Standar React 2026 menggunakan *Server Components* dan pustaka *async data fetching* seperti **TanStack Query v5+** atau pustaka bawaan *framework*:
-- **Standarisasi Response**: API secara konsisten mengembalikan `{ status, metadata, data }`. Frontend wajib mengimplementasikan *interceptor* global untuk mengekstrak data atau menangani error secara otomatis tanpa pengulangan kode.
-- **Pesan Error Bahasa Indonesia**: Seluruh validasi backend (Zod) langsung mereturn pesan error yang siap ditampilkan (contoh: "ID Item tidak valid"). Hubungkan ini langsung dengan komponen Toast Notification (contoh: Sonner) atau pesan *inline* pada form.
+## 1. Arsitektur & Teknologi Utama
+Backend InSpectra dibangun untuk skalabilitas tinggi, kemudahan integrasi dengan ekosistem Node.js, dan keandalan data pada sisi server sebelum berinteraksi dengan database (Supabase).
 
-## 3. Komponen Frontend Modern & UX
-Pengembangan komponen frontend untuk QC dan Produksi harus tangguh (*robust*):
-- **Formulir QC di Lapangan**: Didesain responsif (mobile/tablet first) dengan area sentuh yang luas (minimal 44x44px). 
-- **Offline / Sync Support**: Menggunakan kapabilitas *Service Worker* dan penyimpanan lokal (IndexedDB) untuk memastikan entri *Checksheet* dan *Cutting Batch* tidak hilang jika koneksi lantai produksi terputus. Endpoint yang *stateless* dan berbasis UUID mendukung sinkronisasi data ini secara tangguh.
-- **Tabel Data Virtual**: Penggunaan komponen *Virtual Scrolling* / *Windowing* (misal TanStack Virtual) pada halaman Laporan Produksi untuk merender ribuan baris data tanpa jeda (60 FPS).
-- **Dashboard Analitik Dinamis**: Visualisasi *Rasio NG* menggunakan grafik modern (Recharts/Visx) dengan animasi masuk (*entry animation*) dan pop-up data (tooltip) interaktif saat di-hover.
+- **Runtime & Bahasa**: Node.js dengan TypeScript.
+- **Framework API**: Express.js, dirancang stateless dan modular.
+- **ORM & Database**: Prisma ORM, terhubung ke Supabase (PostgreSQL).
+- **Validasi**: Zod digunakan untuk validasi skema input (body, query, params) pada middleware.
+- **Testing**: Vitest untuk Unit Test & E2E Test (Pyramid Testing).
+- **Infrastruktur**: Containerized dengan Docker (Dockerfile & docker-compose.yml siap).
 
-## 4. Keamanan & Manajemen State
-- **State Management**: Batasi penggunaan *global state* (Zustand/Redux) hanya untuk preferensi UI (tema, sidebar stat). Data yang diambil dari backend 100% dikelola oleh *Server State Library* (React Query/SWR).
-- **Integritas Input**: Front-end wajib memvalidasi data menggunakan Zod *schema* sebelum form dikirimkan, sehingga menghasilkan perlindungan berlapis (di level klien dan server) dan meminimalisir *round-trip* tak perlu.
-- **Optimistic UI Updates**: Segala tindakan mutasi (seperti menambahkan *Defect* pada *Checksheet*) harus langsung tercermin di UI sebelum server merespons, untuk menciptakan persepsi aplikasi yang seketika (*instant*).
+## 2. Hardening Input & Validasi
 
-## 5. Fitur Baru: Upload, Paginasi, & Ekspor
-- **File Upload Management**: Komponen upload foto (misalnya untuk defect) harus mendukung *drag-and-drop* dengan *preview* lokal menggunakan `URL.createObjectURL()`. Tampilkan *progress bar* yang responsif saat upload (`/api/v1/upload`), lalu simpan *url* balikan ke field `fotoUrl`.
-- **Paginasi & Pencarian (Server-side)**: Data volume besar seperti Master Data dan Laporan ditarik dengan implementasi *Pagination* (contoh: `useInfiniteQuery` untuk mobile atau tabel berhalaman untuk desktop). Parameter pencarian (`search`) di-debounce selama ~300ms untuk mencegah *spamming* ke server.
-- **Ekspor Excel**: Sediakan tombol *Export Laporan* yang jelas (ikon unduh) yang akan mengunduh format `.xlsx` (dari `/api/v1/laporan/export`). Berikan indikasi loading saat server sedang men-generate file.
+Sistem ini didesain mengutamakan keandalan input dari lantai produksi (E-Checksheet).
+- **Atomic Transactions**: Batch submit checksheet dijalankan dalam Prisma `$transaction`. Jika satu item gagal (misalnya karena defect tidak terdaftar atau perhitungan jumlah NG tidak cocok), seluruh batch akan di-_rollback_ untuk mencegah _partial data corruption_.
+- **Zod Middleware**: Validasi ketat di level terluar (Controller). Jika payload tidak sesuai skema (misalnya properti wajib tidak ada, atau tipe data salah), middleware akan menolak request (HTTP 400) dan mengembalikan array error yang terstruktur sebelum membebani database.
+- **Data Integrity**: Menjamin bahwa referensi dari E-Checksheet (seperti `uniq_no` pada part dan `id_defect`) benar-benar ada dan dalam status `aktif` di master data sebelum data checksheet disimpan.
 
-## 6. E-Checksheet: Batch Submit & Slot Waktu (Fase Transaksi)
+## 3. Strategi Caching & Delta Sync (Offline-First Support)
 
-Modul ini adalah inti dari InSpectra — data kualitas real-time dari lantai produksi.
+Untuk mencegah bottleneck dan eksploitasi limit _Free Tier_ Supabase (HTTP 429), pengambilan data referensial dioptimasi di sisi server.
+- **In-Memory Reference Cache**: Menggunakan implementasi `node-cache` (via `ReferenceCache` util) dengan TTL 300 detik (5 menit).
+- **Cache Invalidation**: Setiap operasi mutasi (Create, Update, Delete) pada entitas master (Part, Material, Defect) akan secara otomatis membersihkan cache yang terkait agar sistem segera menyajikan data yang paling _up-to-date_.
+- **Delta Sync Support**: API List / GET untuk entitas master mendukung query parameter `last_sync_time`. Sistem hanya akan mengembalikan data yang nilai `diperbarui_pada` lebih besar dari `last_sync_time`, meminimalisir payload jaringan untuk klien Android.
 
-### 6.1 Kontrak API: `POST /api/v1/checksheet/submit-batch`
+## 4. Keamanan & Quota Management
 
-Frontend (mobile/tablet Android) mengirim **satu request JSON** yang memuat seluruh sesi pemeriksaan. Server memproses semuanya dalam satu *database transaction* atomik.
+- **Rate Limiting**: `express-rate-limit` dikonfigurasi untuk membatasi maksimal 100 request per 15 menit per IP (dapat disesuaikan di Production). Hal ini untuk mencegah serangan DDoS atau _infinite loop_ dari client yang salah konfigurasi.
+- **Error Handling & Logging**: Menggunakan `pino` untuk logging JSON yang terstruktur. `pino-http` merekam semua request/response. Error di-_sanitize_ sebelum dikembalikan ke klien; pesan error mendetail (stacktrace) tidak pernah bocor ke environment production.
+- **Sanitization**: Informasi sensitif dienkripsi dan diatur melalui `.env` yang tidak di-commit ke Git.
 
-**Struktur Payload:**
-```json
-{
-  "session": {
-    "tipe_proses": "PRESS",
-    "nama_shift": "SHIFT_1",
-    "nama_operator": "Budi Santoso",
-    "nama_line": "LINE-A"
-  },
-  "items": [
-    {
-      "uniq_no": "PR-001",
-      "jumlah_diperiksa": 100,
-      "jumlah_ok": 95,
-      "jumlah_ng": 5,
-      "defects": [
-        {
-          "id_defect": "D01",
-          "nama_defect_snapshot": "Goresan Dalam (Scratch)",
-          "kategori": "PROSES",
-          "jumlah": 3,
-          "fotoUrl": "/public/uploads/foto-defect-123.jpg",
-          "slots": [
-            { "slot_waktu_id": "<uuid-PRESS_SHIFT_1_SLOT_1>", "jumlah": 2 },
-            { "slot_waktu_id": "<uuid-PRESS_SHIFT_1_SLOT_2>", "jumlah": 1 }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
+## 5. Struktur Database & Model (Prisma)
 
-**Business Logic Validasi (Server-side):**
-- `jumlah_ok + jumlah_ng ≤ jumlah_diperiksa` per item
-- Total `jumlah` semua defect ≤ `jumlah_ng` item
-- Total `jumlah` semua slot dalam satu defect **harus sama persis** dengan `jumlah` defect
-- Semua `uniq_no` harus valid di `m_part` dan `aktif: true`
-- Semua `id_defect` harus valid di `m_defect` dan `aktif: true`
+- **`m_part`, `m_material`, `m_defect`**: Tabel Master Data utama. Memiliki flag `aktif` (Soft Delete) agar integritas relasional data transaksional yang lama tidak rusak.
+- **`t_checksheet`, `t_checksheet_item`, `t_checksheet_defect`**: Tabel Transaksi. Merupakan hirarki _One-to-Many_ untuk menyimpan sesi inspeksi QC secara terstruktur.
+- **Time Slots**: E-Checksheet membagi waktu operasi dalam 4 slot (Slot 1, Slot 2, Slot 3, Overtime) untuk memudahkan _tracing_ Pareto defect berdasarkan periode waktu di dalam satu shift.
 
-### 6.2 Desain 4 Time Slots
+## 6. Integrasi Klien (Android)
 
-Setiap proses (PRESS, CUTTING, SEWING, QUALITY_CONTROL) memiliki 4 slot waktu dalam satu shift:
+Klien utama dari API ini adalah aplikasi **Android InSpectra** (Jetpack Compose, Ktor Client). API ini didesain sesuai panduan arsitektur Android:
+- Response menggunakan bahasa Indonesia standar untuk pesan validasi sehingga klien tidak perlu melakukan _mapping_ translasi pesan error (contoh: "Part tidak ditemukan atau tidak aktif").
+- Endpoint dikelompokkan dengan versi API, misal `/api/v1/masterdata/...` dan `/api/v1/checksheet/...`.
 
-| Kode Slot | Label | Keterangan |
-|---|---|---|
-| `{PROSES}_SHIFT_1_SLOT_1` | 08:00 - 12:00 | Sesi pagi |
-| `{PROSES}_SHIFT_1_SLOT_2` | 13:00 - 15:30 | Sesi siang setelah makan |
-| `{PROSES}_SHIFT_1_SLOT_3` | 16:00 - 17:00 | Sesi sore |
-| `{PROSES}_SHIFT_1_OVERTIME` | 17:00 - Selesai | Lembur |
-
-**Cara frontend mendapatkan daftar slot:**
-```
-GET /api/v1/checksheet/slots?tipe_proses=PRESS
-```
-
-### 6.3 Desain Dashboard: Pareto, Trends & Analytics
-
-**Q-Gate Board (Gambar 1) & Master Data Analitik:**
-- **Combo Chart (`GET /api/v1/dashboard/trend-combo`)**: Mengembalikan data tren harian (Total Check/NG sebagai Bar, Defect Rate sebagai Line). Bisa difilter per `tipe_proses` (PRESS/SEWING) atau gabungan.
-- **Pie Distribution (`GET /api/v1/dashboard/pie-distribution`)**: Distribusi proporsi (Pie chart kiri) dari semua jenis defect terhadap total NG.
-- **Top 3 Defects (`GET /api/v1/dashboard/top3-defects`)**: Top 3 defect tertinggi (Pie chart kanan) beserta rincian breakdown _Part Number_ yang paling banyak menyumbang defect tersebut (Tabel Part).
-
-**Analitik Lanjutan:**
-- **Pareto Chart (`GET /api/v1/dashboard/pareto`)**: Top-N defect beserta breakdown `per_slot` waktu.
-- **Trend NG Rate (`GET /api/v1/dashboard/trends`)**: NG rate per hari disertai breakdown overlay per slot waktu.
-
-## 7. Desain Visual & UI/UX (Premium React 2026)
-
-### 7.1 Skema Warna & Tema (Dark Mode First)
-- **Primary**: `#0EA5E9` (Sky 500) - Digunakan untuk aksi utama, tombol submit, dan progress bar.
-- **Secondary**: `#6366F1` (Indigo 500) - Digunakan untuk aksen grafik dan elemen navigasi.
-- **Background (Dark)**: `#0F172A` (Slate 900) dengan overlay `#1E293B` (Slate 800) untuk card.
-- **Surface**: Glassmorphism (Background: `rgba(30, 41, 59, 0.7)`, Backdrop Blur: `12px`).
-- **Success**: `#10B981` (Emerald 500).
-- **Danger**: `#EF4444` (Red 500) - Sangat kontras terhadap background gelap.
-
-### 7.2 Tipografi & Ikonografi
-- **Headings**: *Plus Jakarta Sans* (Semi-bold/Bold) untuk kesan modern dan lega.
-- **Body**: *Inter* atau *Geist* (Medium) untuk legibilitas tinggi pada data tabel.
-- **Icons**: *Lucide React* atau *Phosphor Icons* (Duo-tone style) dengan ketebalan stroke `1.5px`.
-
-### 7.3 User Journey: QC Entry Flow
-1. **Identifikasi**: Operator login/scan badge -> Pilih Line & Shift.
-2. **Pilih Part**: Scan Kanban QR atau Cari Part -> Muncul mapping defect relevan.
-3. **Input Check**: Masukkan jumlah OK/NG (Real-time NG Rate preview).
-4. **Detail Defect**: Jika ada NG -> Pilih jenis defect (mapping otomatis) -> Masukkan Qty -> Alokasi Slot Waktu (otomatis disarankan berdasarkan jam saat ini) -> Upload Foto.
-5. **Review**: Ringkasan batch (Total, OK, NG, % Defect) -> Submit.
-6. **Confirmation**: Animasi sukses (Lottie) -> Data masuk ke Dashboard Global.
-
-### 7.4 Robustness & Offline Support
-- **State Persistence**: Menggunakan `TanStack Query` dengan `persistQueryClient` (Local Storage/IndexedDB).
-- **Queue System**: Jika offline, request batch disimpan di `workbox-background-sync`.
-- **UI Copy**: Gunakan bahasa yang teknikal namun jelas (Contoh: "Sinkronisasi Berhasil", "Alokasi Slot Tidak Sesuai").
+*(Catatan: Fitur dashboard dan statistik agregasi saat ini tidak ada/dihapus dari prioritas sistem untuk memfokuskan repository pada **Hardening Input**).*
