@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import * as dashboardService from "../services/dashboard.service";
+import * as pdfService from "../services/pdf.service";
 import { successResponse } from "../utils/ApiResponse";
 
 export const getTopDefects = async (
@@ -52,12 +53,42 @@ export const getPareto = async (
 ) => {
 	try {
 		const top_n = req.query.top_n ? parseInt(req.query.top_n as string, 10) : 5;
+		const startDate = req.query.startDate as string;
+		const endDate = req.query.endDate as string;
+		const tipe_proses = req.query.tipe_proses as string;
+		const exportPdf = req.query.exportPdf === "true";
+
 		const result = await dashboardService.getPareto({
-			startDate: req.query.startDate as string,
-			endDate: req.query.endDate as string,
-			tipe_proses: req.query.tipe_proses as string,
+			startDate,
+			endDate,
+			tipe_proses,
 			top_n,
 		});
+
+		if (exportPdf) {
+			let dateRangeStr = "Semua Waktu";
+			if (startDate && endDate) {
+				dateRangeStr = `${startDate} - ${endDate}`;
+			} else if (startDate) {
+				dateRangeStr = `Mulai ${startDate}`;
+			} else if (endDate) {
+				dateRangeStr = `Hingga ${endDate}`;
+			}
+
+			const pdfBuffer = await pdfService.generateParetoPdf(
+				result.pareto,
+				dateRangeStr,
+				tipe_proses || "Semua",
+			);
+
+			res.setHeader("Content-Type", "application/pdf");
+			res.setHeader(
+				"Content-Disposition",
+				`attachment; filename="Laporan_Pareto_Defect.pdf"`,
+			);
+			return res.send(pdfBuffer);
+		}
+
 		res.json(successResponse(result));
 	} catch (error) {
 		next(error);

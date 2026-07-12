@@ -194,6 +194,9 @@ model CuttingBatch {
   dibuat_pada                   DateTime                       @default(now()) @db.Timestamptz(6)
   diperbarui_pada               DateTime                       @default(now()) @db.Timestamptz(6)
   ukuran_cutting_cm             Decimal?                       @db.Decimal(12, 3)
+  tebal_mm_snapshot             Decimal?                       @db.Decimal(12, 3)
+  berat_gsm_snapshot            Decimal?                       @db.Decimal(12, 3)
+  gramasi_gsm_snapshot          Decimal?                       @db.Decimal(12, 3)
   nama_material_snapshot        String?                        @db.VarChar
   nama_operator                 String?                        @db.VarChar
   spec_material_snapshot        String?
@@ -721,6 +724,8 @@ model t_rasio_kehadiran {
   m_karyawan          MasterEmployee                @relation(fields: [karyawan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([tanggal, karyawan_id])
+  @@index([tanggal, line_process], map: "idx_absensi_tanggal_line")
+  @@index([karyawan_id], map: "idx_absensi_karyawan")
 }
 
 enum kategori_defect_inspectra {

@@ -3,7 +3,7 @@ import type {
 	tipe_proses_inspectra,
 } from "@prisma/client";
 import prisma from "../config/prisma";
-import { referenceCache, CACHE_KEYS, invalidatePrefix } from "../utils/cache";
+import { CACHE_KEYS, invalidatePrefix, referenceCache } from "../utils/cache";
 
 export const getParts = async (
 	params: {
@@ -15,14 +15,14 @@ export const getParts = async (
 	} = {},
 ) => {
 	const { page = 1, limit = 10, search, commodity, last_sync_time } = params;
-	
+
 	const cacheKey = `${CACHE_KEYS.PARTS}_${page}_${limit}_${search || ""}_${commodity || ""}_${last_sync_time || ""}`;
-	const cached = referenceCache.get(cacheKey);
+	const cached = referenceCache.get<any>(cacheKey);
 	if (cached) return cached;
 
 	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
-	
+
 	if (search) {
 		where.OR = [
 			{ name: { contains: search, mode: "insensitive" } },
@@ -61,7 +61,13 @@ export const getParts = async (
 		prisma.masterPart.count({ where }),
 	]);
 
-	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = {
+		data,
+		total,
+		page,
+		limit,
+		totalPages: Math.ceil(total / limit),
+	};
 	referenceCache.set(cacheKey, result);
 	return result;
 };
@@ -125,17 +131,22 @@ export const deletePart = async (uniqNo: string) => {
 };
 
 export const getMaterials = async (
-	params: { page?: number; limit?: number; search?: string; last_sync_time?: string } = {},
+	params: {
+		page?: number;
+		limit?: number;
+		search?: string;
+		last_sync_time?: string;
+	} = {},
 ) => {
 	const { page = 1, limit = 10, search, last_sync_time } = params;
-	
+
 	const cacheKey = `${CACHE_KEYS.MATERIALS}_${page}_${limit}_${search || ""}_${last_sync_time || ""}`;
-	const cached = referenceCache.get(cacheKey);
+	const cached = referenceCache.get<any>(cacheKey);
 	if (cached) return cached;
 
 	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
-	
+
 	if (search) {
 		where.name = { contains: search, mode: "insensitive" };
 	}
@@ -154,7 +165,13 @@ export const getMaterials = async (
 		prisma.masterMaterial.count({ where }),
 	]);
 
-	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = {
+		data,
+		total,
+		page,
+		limit,
+		totalPages: Math.ceil(total / limit),
+	};
 	referenceCache.set(cacheKey, result);
 	return result;
 };
@@ -212,17 +229,22 @@ export const deleteMaterial = async (code: string) => {
 };
 
 export const getDefects = async (
-	params: { page?: number; limit?: number; search?: string; last_sync_time?: string } = {},
+	params: {
+		page?: number;
+		limit?: number;
+		search?: string;
+		last_sync_time?: string;
+	} = {},
 ) => {
 	const { page = 1, limit = 10, search, last_sync_time } = params;
-	
+
 	const cacheKey = `${CACHE_KEYS.DEFECTS}_${page}_${limit}_${search || ""}_${last_sync_time || ""}`;
-	const cached = referenceCache.get(cacheKey);
+	const cached = referenceCache.get<any>(cacheKey);
 	if (cached) return cached;
 
 	const skip = (page - 1) * limit;
 	const where: any = { aktif: true };
-	
+
 	if (search) {
 		where.name = { contains: search, mode: "insensitive" };
 	}
@@ -240,7 +262,13 @@ export const getDefects = async (
 		prisma.masterDefect.count({ where }),
 	]);
 
-	const result = { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+	const result = {
+		data,
+		total,
+		page,
+		limit,
+		totalPages: Math.ceil(total / limit),
+	};
 	referenceCache.set(cacheKey, result);
 	return result;
 };

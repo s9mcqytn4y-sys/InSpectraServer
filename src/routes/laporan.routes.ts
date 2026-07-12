@@ -80,6 +80,40 @@ router.get("/export", laporanController.exportLaporan);
  *   get:
  *     summary: Get all production reports
  *     tags: [Laporan]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by tipe_proses
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: exportPdf
+ *         schema:
+ *           type: boolean
+ *         description: Set to true to export the result as a PDF file
+ *     responses:
+ *       200:
+ *         description: List of reports or PDF file
  */
 router.get("/", validate(getLaporanQuerySchema), laporanController.getLaporan);
 

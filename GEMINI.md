@@ -27,12 +27,17 @@ Setiap API **wajib** mengimplementasikan pola yang sangat ketat untuk input data
 - Modul Master Data, Laporan Produksi, Cutting, Checksheet dan Karyawan adalah target utama migrasi ini.
 - Semua operasi mutasi (Create, Update, Delete) wajib mematuhi standar relitas data.
 
-## 4. Keamanan Dasar
+## 4. Optimasi Performa & Pencarian
+- Seluruh pengambilan Master Data wajib menggunakan **In-Memory Cache (TTL 5 Menit)** melalui `node-cache`.
+- Pencarian teks di database wajib memanfaatkan **GIN Index** dan ekstensi `pg_trgm` agar berjalan optimal dengan `ILIKE`.
+- Laporan kompleks (seperti Absensi) dan generasi PDF menggunakan `pdfmake` diproses terpusat dan efisien di Backend.
+
+## 5. Keamanan Dasar
 
 - Pastikan `express-rate-limit` aktif di *global router*.
 - **Jangan** membocorkan internal _stack trace_ di lingkungan *production*. 
 
-## 5. Protokol Verifikasi Mandat
+## 6. Protokol Verifikasi Mandat
 
 Sebelum perubahan kode selesai:
 

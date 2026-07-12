@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import * as checksheetService from "../services/checksheet.service";
+import * as pdfService from "../services/pdf.service";
 import { successResponse } from "../utils/ApiResponse";
 
 export const startSession = async (
@@ -55,13 +56,31 @@ export const getSessions = async (
 			: undefined;
 		const tipe_proses = req.query.tipe_proses as string | undefined;
 		const tanggal = req.query.tanggal as string | undefined;
+		const exportPdf = req.query.exportPdf === "true";
 
 		const result = await checksheetService.getSessions({
-			page,
-			limit,
+			page: exportPdf ? 1 : page,
+			limit: exportPdf ? 10000 : limit,
 			tipe_proses,
 			tanggal,
 		});
+
+		if (exportPdf) {
+			const dateRangeStr = tanggal ? tanggal : "Semua Waktu";
+			const pdfBuffer = await pdfService.generateChecksheetPdf(
+				result.data,
+				dateRangeStr,
+				tipe_proses || "Semua",
+			);
+
+			res.setHeader("Content-Type", "application/pdf");
+			res.setHeader(
+				"Content-Disposition",
+				`attachment; filename="Laporan_E-Checksheet.pdf"`,
+			);
+			return res.send(pdfBuffer);
+		}
+
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,

@@ -58,4 +58,51 @@ router.post(
 	attendanceController.createEmployee,
 );
 
+/**
+ * @swagger
+ * /api/v1/attendance/reports:
+ *   get:
+ *     summary: Get attendance reports with optional PDF export
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: lineProcess
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *       - in: query
+ *         name: exportPdf
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Report data or PDF file
+ */
+router.get("/reports", attendanceController.getAttendanceReport);
+
 export default router;

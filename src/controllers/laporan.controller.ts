@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import * as exportService from "../services/export.service";
 import * as laporanService from "../services/laporan.service";
+import * as pdfService from "../services/pdf.service";
 import { successResponse } from "../utils/ApiResponse";
 
 export const submitLaporanHarian = async (
@@ -35,14 +36,41 @@ export const getLaporan = async (
 		const endDate = req.query.endDate
 			? new Date(req.query.endDate as string)
 			: undefined;
+		const exportPdf = req.query.exportPdf === "true";
 
+		// If exporting PDF, we might want to ignore pagination to export all matching data
 		const result = await laporanService.getLaporan({
-			page,
-			limit,
+			page: exportPdf ? 1 : page,
+			limit: exportPdf ? 10000 : limit,
 			search,
 			startDate,
 			endDate,
 		});
+
+		if (exportPdf) {
+			let dateRangeStr = "Semua Waktu";
+			if (startDate && endDate) {
+				dateRangeStr = `${startDate.toLocaleDateString("id-ID")} - ${endDate.toLocaleDateString("id-ID")}`;
+			} else if (startDate) {
+				dateRangeStr = `Mulai ${startDate.toLocaleDateString("id-ID")}`;
+			} else if (endDate) {
+				dateRangeStr = `Hingga ${endDate.toLocaleDateString("id-ID")}`;
+			}
+
+			const pdfBuffer = await pdfService.generateLaporanProduksiPdf(
+				result.data,
+				dateRangeStr,
+				search || "Semua",
+			);
+
+			res.setHeader("Content-Type", "application/pdf");
+			res.setHeader(
+				"Content-Disposition",
+				`attachment; filename="Laporan_Produksi.pdf"`,
+			);
+			return res.send(pdfBuffer);
+		}
+
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,

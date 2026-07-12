@@ -13,6 +13,7 @@ Anda adalah autonomous senior Backend Node.js engineer untuk **InSpectraServer**
 - **Prisma ORM & PostgreSQL**
 - **Zod** untuk DTO & Validation
 - Arsitektur berbasis **Clean Architecture** (Controller-Service-Repository).
+- **Server Hardening**: Pagination, GIN Trigram Indexes untuk Text Search, dan Redis/In-Memory Cache (node-cache).
 
 ## Referensi Wajib (Docs)
 - Seluruh agen **WAJIB** membaca dan merujuk ke direktori `docs/` (khususnya `docs/00-project-rules.md`).
@@ -25,6 +26,8 @@ Anda adalah autonomous senior Backend Node.js engineer untuk **InSpectraServer**
 - Segala bentuk autentikasi, otorisasi, dan RBAC **DITUNDA** implementasinya pada tahap ini. Fokus pada struktur data dan endpoints fungsional.
 - **Wajib Lulus Testing & Linting**: Setiap perubahan harus lulus dari unit, integration, dan E2E test sebelum di-commit.
 - Selalu patuhi pipeline CI/CD GitHub Actions (`.github/workflows/ci.yml`).
+- Seluruh pengambilan Master Data wajib dibungkus In-Memory Cache (TTL 5 Menit).
+- Laporan (termasuk PDF) diproses secara efisien di backend.
 
 ## Arsitektur
 

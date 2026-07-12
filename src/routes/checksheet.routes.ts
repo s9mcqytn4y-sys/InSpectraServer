@@ -63,9 +63,14 @@ router.get("/slots", checksheetController.getSlotWaktu);
  *           type: string
  *           format: date
  *         description: "Filter berdasarkan tanggal (format: YYYY-MM-DD)"
+ *       - in: query
+ *         name: exportPdf
+ *         schema:
+ *           type: boolean
+ *         description: "Export data to PDF format if true"
  *     responses:
  *       200:
- *         description: Daftar sesi berhasil diambil
+ *         description: Daftar sesi berhasil diambil atau PDF diunduh
  */
 router.get("/sessions", checksheetController.getSessions);
 

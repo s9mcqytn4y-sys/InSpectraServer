@@ -135,9 +135,14 @@ router.get(
  *           type: integer
  *           default: 5
  *         description: Jumlah Top-N defect yang diambil
+ *       - in: query
+ *         name: exportPdf
+ *         schema:
+ *           type: boolean
+ *         description: Set to true to export the Pareto table as a PDF file
  *     responses:
  *       200:
- *         description: Data Pareto berhasil diambil
+ *         description: Data Pareto berhasil diambil atau PDF berhasil diunduh
  *         content:
  *           application/json:
  *             example:

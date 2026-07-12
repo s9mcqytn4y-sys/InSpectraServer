@@ -34,5 +34,6 @@ export const getLaporanQuerySchema = z.object({
 		search: z.string().optional(),
 		startDate: z.string().datetime().optional(),
 		endDate: z.string().datetime().optional(),
+		exportPdf: z.string().optional(),
 	}),
 });

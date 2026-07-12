@@ -1,7 +1,8 @@
 const pdfmake = require("pdfmake");
-import type { TDocumentDefinitions } from "pdfmake/interfaces";
-import path from "node:path";
+
 import fs from "node:fs";
+import path from "node:path";
+import type { TDocumentDefinitions } from "pdfmake/interfaces";
 
 // Define fonts for pdfmake
 const fonts = {
@@ -18,7 +19,7 @@ pdfmake.setFonts(fonts);
 export const generateAttendancePdf = async (
 	reportData: any[],
 	dateRangeStr: string,
-	lineProcess: string
+	lineProcess: string,
 ): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -50,7 +51,16 @@ export const generateAttendancePdf = async (
 					{
 						table: {
 							headerRows: 1,
-							widths: ["auto", "auto", "*", "auto", "auto", "auto", "auto", "auto"],
+							widths: [
+								"auto",
+								"auto",
+								"*",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+							],
 							body: [
 								[
 									{ text: "No", style: "tableHeader" },
@@ -100,9 +110,12 @@ export const generateAttendancePdf = async (
 			};
 
 			const pdfDoc = pdfmake.createPdf(docDefinition);
-			pdfDoc.getBuffer().then((buffer: Buffer) => {
-				resolve(buffer);
-			}).catch((err: any) => reject(err));
+			pdfDoc
+				.getBuffer()
+				.then((buffer: Buffer) => {
+					resolve(buffer);
+				})
+				.catch((err: any) => reject(err));
 
 			pdfDoc.end();
 		} catch (error) {
@@ -114,7 +127,7 @@ export const generateAttendancePdf = async (
 export const generateLaporanProduksiPdf = async (
 	reportData: any[],
 	dateRangeStr: string,
-	tipeProses: string
+	tipeProses: string,
 ): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -146,7 +159,17 @@ export const generateLaporanProduksiPdf = async (
 					{
 						table: {
 							headerRows: 1,
-							widths: ["auto", "auto", "auto", "*", "auto", "auto", "auto", "auto", "auto"],
+							widths: [
+								"auto",
+								"auto",
+								"auto",
+								"*",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+							],
 							body: [
 								[
 									{ text: "No", style: "tableHeader" },
@@ -160,30 +183,43 @@ export const generateLaporanProduksiPdf = async (
 									{ text: "OT Prod", style: "tableHeader" },
 								],
 								...reportData.flatMap((laporan, index) => {
-									if (laporan.e_laporan_produksi_detail && laporan.e_laporan_produksi_detail.length > 0) {
-										return laporan.e_laporan_produksi_detail.map((detail: any, dIndex: number) => [
-											dIndex === 0 ? index + 1 : "",
-											dIndex === 0 ? new Date(laporan.tanggal).toLocaleDateString("id-ID") : "",
-											dIndex === 0 ? laporan.tipe_proses : "",
-											detail.m_part?.name || "-",
-											detail.planning?.toString() || "0",
-											detail.actual?.toString() || "0",
-											detail.ng?.toString() || "0",
-											dIndex === 0 ? laporan.mp_direct?.toString() || "0" : "",
-											dIndex === 0 ? laporan.ot_prod?.toString() || "0" : "",
-										]);
+									if (
+										laporan.e_laporan_produksi_detail &&
+										laporan.e_laporan_produksi_detail.length > 0
+									) {
+										return laporan.e_laporan_produksi_detail.map(
+											(detail: any, dIndex: number) => [
+												dIndex === 0 ? index + 1 : "",
+												dIndex === 0
+													? new Date(laporan.tanggal).toLocaleDateString(
+															"id-ID",
+														)
+													: "",
+												dIndex === 0 ? laporan.tipe_proses : "",
+												detail.m_part?.name || "-",
+												detail.planning?.toString() || "0",
+												detail.actual?.toString() || "0",
+												detail.ng?.toString() || "0",
+												dIndex === 0
+													? laporan.mp_direct?.toString() || "0"
+													: "",
+												dIndex === 0 ? laporan.ot_prod?.toString() || "0" : "",
+											],
+										);
 									} else {
-										return [[
-											index + 1,
-											new Date(laporan.tanggal).toLocaleDateString("id-ID"),
-											laporan.tipe_proses,
-											"-",
-											"-",
-											"-",
-											"-",
-											laporan.mp_direct?.toString() || "0",
-											laporan.ot_prod?.toString() || "0",
-										]];
+										return [
+											[
+												index + 1,
+												new Date(laporan.tanggal).toLocaleDateString("id-ID"),
+												laporan.tipe_proses,
+												"-",
+												"-",
+												"-",
+												"-",
+												laporan.mp_direct?.toString() || "0",
+												laporan.ot_prod?.toString() || "0",
+											],
+										];
 									}
 								}),
 							],
@@ -194,14 +230,22 @@ export const generateLaporanProduksiPdf = async (
 				styles: {
 					header: { fontSize: 18, bold: true },
 					subheader: { fontSize: 12, bold: false },
-					tableHeader: { bold: true, fontSize: 11, color: "black", fillColor: "#f3f4f6" },
+					tableHeader: {
+						bold: true,
+						fontSize: 11,
+						color: "black",
+						fillColor: "#f3f4f6",
+					},
 				},
 				defaultStyle: { font: "Roboto", fontSize: 10 },
 			};
 			const pdfDoc = pdfmake.createPdf(docDefinition);
-			pdfDoc.getBuffer().then((buffer: Buffer) => {
-				resolve(buffer);
-			}).catch((err: any) => reject(err));
+			pdfDoc
+				.getBuffer()
+				.then((buffer: Buffer) => {
+					resolve(buffer);
+				})
+				.catch((err: any) => reject(err));
 		} catch (error) {
 			reject(error);
 		}
@@ -211,7 +255,7 @@ export const generateLaporanProduksiPdf = async (
 export const generateChecksheetPdf = async (
 	reportData: any[],
 	dateRangeStr: string,
-	tipeProses: string
+	tipeProses: string,
 ): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -219,15 +263,38 @@ export const generateChecksheetPdf = async (
 				pageSize: "A4",
 				pageOrientation: "landscape",
 				pageMargins: [40, 60, 40, 60],
-				header: { text: "PT. Primaraya Graha Nusantara", margin: [40, 20, 0, 0], fontSize: 10, color: "gray" },
-				footer: (currentPage, pageCount) => ({ text: `Halaman ${currentPage} dari ${pageCount}`, alignment: "center", fontSize: 9, margin: [0, 20, 0, 0] }),
+				header: {
+					text: "PT. Primaraya Graha Nusantara",
+					margin: [40, 20, 0, 0],
+					fontSize: 10,
+					color: "gray",
+				},
+				footer: (currentPage, pageCount) => ({
+					text: `Halaman ${currentPage} dari ${pageCount}`,
+					alignment: "center",
+					fontSize: 9,
+					margin: [0, 20, 0, 0],
+				}),
 				content: [
 					{ text: "Laporan E-Checksheet", style: "header" },
-					{ text: `Tanggal/Periode: ${dateRangeStr} | Tipe Proses: ${tipeProses || "Semua"}`, style: "subheader", margin: [0, 0, 0, 20] },
+					{
+						text: `Tanggal/Periode: ${dateRangeStr} | Tipe Proses: ${tipeProses || "Semua"}`,
+						style: "subheader",
+						margin: [0, 0, 0, 20],
+					},
 					{
 						table: {
 							headerRows: 1,
-							widths: ["auto", "auto", "auto", "auto", "auto", "auto", "auto", "auto"],
+							widths: [
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+								"auto",
+							],
 							body: [
 								[
 									{ text: "No", style: "tableHeader" },
@@ -257,14 +324,22 @@ export const generateChecksheetPdf = async (
 				styles: {
 					header: { fontSize: 18, bold: true },
 					subheader: { fontSize: 12, bold: false },
-					tableHeader: { bold: true, fontSize: 11, color: "black", fillColor: "#f3f4f6" },
+					tableHeader: {
+						bold: true,
+						fontSize: 11,
+						color: "black",
+						fillColor: "#f3f4f6",
+					},
 				},
 				defaultStyle: { font: "Roboto", fontSize: 10 },
 			};
 			const pdfDoc = pdfmake.createPdf(docDefinition);
-			pdfDoc.getBuffer().then((buffer: Buffer) => {
-				resolve(buffer);
-			}).catch((err: any) => reject(err));
+			pdfDoc
+				.getBuffer()
+				.then((buffer: Buffer) => {
+					resolve(buffer);
+				})
+				.catch((err: any) => reject(err));
 		} catch (error) {
 			reject(error);
 		}
@@ -274,7 +349,7 @@ export const generateChecksheetPdf = async (
 export const generateParetoPdf = async (
 	paretoData: any[],
 	dateRangeStr: string,
-	tipeProses: string
+	tipeProses: string,
 ): Promise<Buffer> => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -282,11 +357,25 @@ export const generateParetoPdf = async (
 				pageSize: "A4",
 				pageOrientation: "landscape",
 				pageMargins: [40, 60, 40, 60],
-				header: { text: "PT. Primaraya Graha Nusantara", margin: [40, 20, 0, 0], fontSize: 10, color: "gray" },
-				footer: (currentPage, pageCount) => ({ text: `Halaman ${currentPage} dari ${pageCount}`, alignment: "center", fontSize: 9, margin: [0, 20, 0, 0] }),
+				header: {
+					text: "PT. Primaraya Graha Nusantara",
+					margin: [40, 20, 0, 0],
+					fontSize: 10,
+					color: "gray",
+				},
+				footer: (currentPage, pageCount) => ({
+					text: `Halaman ${currentPage} dari ${pageCount}`,
+					alignment: "center",
+					fontSize: 9,
+					margin: [0, 20, 0, 0],
+				}),
 				content: [
 					{ text: "Laporan Pareto Defect", style: "header" },
-					{ text: `Tanggal/Periode: ${dateRangeStr} | Tipe Proses: ${tipeProses || "Semua"}`, style: "subheader", margin: [0, 0, 0, 20] },
+					{
+						text: `Tanggal/Periode: ${dateRangeStr} | Tipe Proses: ${tipeProses || "Semua"}`,
+						style: "subheader",
+						margin: [0, 0, 0, 20],
+					},
 					{
 						table: {
 							headerRows: 1,
@@ -312,14 +401,22 @@ export const generateParetoPdf = async (
 				styles: {
 					header: { fontSize: 18, bold: true },
 					subheader: { fontSize: 12, bold: false },
-					tableHeader: { bold: true, fontSize: 11, color: "black", fillColor: "#f3f4f6" },
+					tableHeader: {
+						bold: true,
+						fontSize: 11,
+						color: "black",
+						fillColor: "#f3f4f6",
+					},
 				},
 				defaultStyle: { font: "Roboto", fontSize: 10 },
 			};
 			const pdfDoc = pdfmake.createPdf(docDefinition);
-			pdfDoc.getBuffer().then((buffer: Buffer) => {
-				resolve(buffer);
-			}).catch((err: any) => reject(err));
+			pdfDoc
+				.getBuffer()
+				.then((buffer: Buffer) => {
+					resolve(buffer);
+				})
+				.catch((err: any) => reject(err));
 		} catch (error) {
 			reject(error);
 		}

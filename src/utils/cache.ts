@@ -9,6 +9,8 @@ export const CACHE_KEYS = {
 	PARTS: "master_parts",
 	MATERIALS: "master_materials",
 	DEFECTS: "master_defects",
+	EMPLOYEES: "master_employees",
+	ATTENDANCE_REPORT: "attendance_report",
 };
 
 export const invalidatePrefix = (prefix: string) => {
