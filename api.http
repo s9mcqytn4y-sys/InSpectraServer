@@ -180,3 +180,52 @@ GET {{baseUrl}}/dashboard/oee-metrics
 ### Get NG Rate (Reject Ratio)
 GET {{baseUrl}}/dashboard/ng-rate
 # Authorization: Bearer {{authToken}}
+
+### Get Pareto Chart (PRESS)
+GET {{baseUrl}}/dashboard/pareto?tipe_proses=PRESS&top_n=5
+
+### Get Pareto Chart (SEWING)
+GET {{baseUrl}}/dashboard/pareto?tipe_proses=SEWING&top_n=5
+
+### Get Trend Harian per Slot
+GET {{baseUrl}}/dashboard/trends?tipe_proses=PRESS
+
+### ========================================
+### Q-GATE DASHBOARD (NEW)
+### ========================================
+
+### --- PRESS ---
+
+### Q-Gate Combo Chart (PRESS bulan ini)
+GET {{baseUrl}}/dashboard/trend-combo?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Pie Distribution (PRESS bulan ini)
+GET {{baseUrl}}/dashboard/pie-distribution?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Top 3 Defect + Breakdown Part (PRESS bulan ini)
+GET {{baseUrl}}/dashboard/top3-defects?tipe_proses=PRESS&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z&top_n=3
+
+### --- SEWING ---
+
+### Q-Gate Combo Chart (SEWING bulan ini)
+GET {{baseUrl}}/dashboard/trend-combo?tipe_proses=SEWING&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Pie Distribution (SEWING bulan ini)
+GET {{baseUrl}}/dashboard/pie-distribution?tipe_proses=SEWING&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Top 3 Defect + Breakdown Part (SEWING bulan ini)
+GET {{baseUrl}}/dashboard/top3-defects?tipe_proses=SEWING&startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z&top_n=3
+
+### --- GABUNGAN (Semua Proses) ---
+
+### Q-Gate Combo Chart (GABUNGAN — tanpa filter tipe_proses)
+GET {{baseUrl}}/dashboard/trend-combo?startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Pie Distribution (GABUNGAN)
+GET {{baseUrl}}/dashboard/pie-distribution?startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z
+
+### Q-Gate Top 3 Defect + Breakdown Part (GABUNGAN)
+GET {{baseUrl}}/dashboard/top3-defects?startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z&top_n=3
+
+### Q-Gate Top 5 Defect (GABUNGAN, top_n=5)
+GET {{baseUrl}}/dashboard/top3-defects?startDate=2026-07-01T00:00:00Z&endDate=2026-07-31T23:59:59Z&top_n=5

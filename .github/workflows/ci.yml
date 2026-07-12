@@ -9,6 +9,21 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: inspectra_user
+          POSTGRES_PASSWORD: inspectra_password
+          POSTGRES_DB: inspectra_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v4
@@ -28,8 +43,18 @@ jobs:
     - name: Generate Prisma Client
       run: npx prisma generate
 
+    - name: Database setup and seed
+      run: |
+        npx prisma db push --accept-data-loss
+        npx prisma db seed
+      env:
+        DATABASE_URL: postgresql://inspectra_user:inspectra_password@localhost:5432/inspectra_db?schema=public
+
     - name: Type Check (TypeScript)
       run: npx tsc --noEmit
 
     - name: Run Tests
       run: npm run test --if-present
+      env:
+        DATABASE_URL: postgresql://inspectra_user:inspectra_password@localhost:5432/inspectra_db?schema=public
+        PORT: 3000

@@ -49,7 +49,7 @@ model MasterMaterial {
   id                                                                       String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code                                                                     String?                    @unique @map("kode_material")
   name                                                                     String                     @map("nama_material")
-  nama_normalisasi                                                         String?                    @default(dbgenerated("upper(TRIM(BOTH FROM regexp_replace(nama_material, '\\s+'::text, ' '::text, 'g'::text)))"))
+  nama_normalisasi                                                         String?
   supplier_id                                                              String?                    @db.Uuid
   supplier_manual                                                          String?
   jenis_material                                                           String?
@@ -85,8 +85,6 @@ model MasterMaterial {
   m_material_supplier                                                      m_material_supplier[]
   m_part_material                                                          m_part_material[]
 
-  @@unique([nama_normalisasi, supplier_id, spec_ringkas])
-  @@index([nama_normalisasi], map: "idx_m_material_search", where: raw("(aktif = true)"))
   @@map("m_material")
 }
 
@@ -622,7 +620,7 @@ model m_part_defect {
   m_defect          MasterDefect @relation(fields: [id_defect], references: [id_defect], onUpdate: NoAction)
   m_part            MasterPart   @relation(fields: [uniq_no], references: [uniqNo], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([uniq_no, id_defect])
+  @@unique([uniq_no, id_defect], name: "uniq_no_id_defect")
   @@index([uniq_no], map: "idx_m_part_defect_uniq", where: raw("(aktif = true)"))
 }
 

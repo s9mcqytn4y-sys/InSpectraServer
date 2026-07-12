@@ -17,7 +17,12 @@ export const getParts = async (
 		const search = req.query.search as string | undefined;
 		const commodity = req.query.commodity as string | undefined;
 
-		const result = await masterDataService.getParts({ page, limit, search, commodity });
+		const result = await masterDataService.getParts({
+			page,
+			limit,
+			search,
+			commodity,
+		});
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,
@@ -42,6 +47,37 @@ export const createPart = async (
 	try {
 		const part = await masterDataService.createPart(req.body);
 		res.status(201).json(successResponse(part));
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updatePart = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const part = await masterDataService.updatePart(
+			req.params.uniqNo as string,
+			req.body,
+		);
+		res.status(200).json(successResponse(part));
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const deletePart = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const part = await masterDataService.deletePart(
+			req.params.uniqNo as string,
+		);
+		res.status(200).json(successResponse(part));
 	} catch (error) {
 		next(error);
 	}
@@ -95,6 +131,37 @@ export const createMaterial = async (
 	}
 };
 
+export const updateMaterial = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const material = await masterDataService.updateMaterial(
+			req.params.code as string,
+			req.body,
+		);
+		res.status(200).json(successResponse(material));
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const deleteMaterial = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const material = await masterDataService.deleteMaterial(
+			req.params.code as string,
+		);
+		res.status(200).json(successResponse(material));
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const getDefects = async (
 	req: Request,
 	res: Response,
@@ -134,6 +201,37 @@ export const createDefect = async (
 	try {
 		const defect = await masterDataService.createDefect(req.body);
 		res.status(201).json(successResponse(defect));
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updateDefect = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const defect = await masterDataService.updateDefect(
+			req.params.id_defect as string,
+			req.body,
+		);
+		res.status(200).json(successResponse(defect));
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const deleteDefect = async (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	try {
+		const defect = await masterDataService.deleteDefect(
+			req.params.id_defect as string,
+		);
+		res.status(200).json(successResponse(defect));
 	} catch (error) {
 		next(error);
 	}

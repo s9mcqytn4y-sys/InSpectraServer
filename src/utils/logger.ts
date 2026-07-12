@@ -13,4 +13,14 @@ export const logger = pino({
 					},
 				}
 			: undefined,
+	redact: {
+		paths: [
+			"req.headers.authorization",
+			"req.headers.apikey",
+			"*.password",
+			"*.token",
+			"*.nip",
+		],
+		censor: "[REDACTED]",
+	},
 });

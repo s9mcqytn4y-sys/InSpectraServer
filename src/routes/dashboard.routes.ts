@@ -195,4 +195,176 @@ router.get(
 	dashboardController.getTrends,
 );
 
+/**
+ * @swagger
+ * /api/v1/dashboard/trend-combo:
+ *   get:
+ *     summary: "Q-Gate Combo Chart — Bar (Total Check/NG) + Line (Defect Rate %)"
+ *     tags: [Dashboard]
+ *     description: |
+ *       Data harian untuk Combo Chart Q-Gate Board.
+ *       - `tipe_proses=PRESS` → hanya data PRESS
+ *       - `tipe_proses=SEWING` → hanya data SEWING
+ *       - Kosongkan `tipe_proses` → **GABUNGAN** semua proses (PRESS + SEWING + CUTTING)
+ *
+ *       Response mencakup `data_harian` (per tanggal) dan `ringkasan` (agregat global).
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: tipe_proses
+ *         schema:
+ *           type: string
+ *           enum: [PRESS, CUTTING, SEWING, QUALITY_CONTROL]
+ *         description: "Filter proses. Kosongkan untuk data GABUNGAN."
+ *     responses:
+ *       200:
+ *         description: Data Combo Chart berhasil diambil
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: success
+ *               data:
+ *                 data_harian:
+ *                   - tanggal: "2026-07-01"
+ *                     total_check_pcs: 500
+ *                     total_ng_pcs: 12
+ *                     total_ok_pcs: 488
+ *                     defect_rate_persen: 2.4
+ *                     sesi_count: 3
+ *                 ringkasan:
+ *                   total_check_pcs: 15000
+ *                   total_ng_pcs: 320
+ *                   total_ok_pcs: 14680
+ *                   defect_rate_persen: 2.133
+ */
+router.get(
+	"/trend-combo",
+	validate(getDashboardQuerySchema),
+	dashboardController.getTrendCombo,
+);
+
+/**
+ * @swagger
+ * /api/v1/dashboard/pie-distribution:
+ *   get:
+ *     summary: "Q-Gate Pie Chart — Distribusi Semua Jenis Defect"
+ *     tags: [Dashboard]
+ *     description: |
+ *       Distribusi proporsi setiap jenis defect dari total NG.
+ *       - `tipe_proses=PRESS` → distribusi defect hanya di PRESS
+ *       - `tipe_proses=SEWING` → distribusi defect hanya di SEWING
+ *       - Kosongkan `tipe_proses` → **GABUNGAN** semua proses
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: tipe_proses
+ *         schema:
+ *           type: string
+ *           enum: [PRESS, CUTTING, SEWING, QUALITY_CONTROL]
+ *         description: "Filter proses. Kosongkan untuk data GABUNGAN."
+ *     responses:
+ *       200:
+ *         description: Distribusi defect berhasil diambil
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: success
+ *               data:
+ *                 distribusi:
+ *                   - id_defect: SEWING_PUTUS
+ *                     nama_defect: Sewing Putus
+ *                     jumlah: 48
+ *                     persentase: 32.65
+ *                   - id_defect: BRUDUL
+ *                     nama_defect: Brudul
+ *                     jumlah: 25
+ *                     persentase: 17.01
+ *                 total_ng_keseluruhan: 147
+ */
+router.get(
+	"/pie-distribution",
+	validate(getDashboardQuerySchema),
+	dashboardController.getPieDistribution,
+);
+
+/**
+ * @swagger
+ * /api/v1/dashboard/top3-defects:
+ *   get:
+ *     summary: "Q-Gate Top 3 Defect + Breakdown Part Number"
+ *     tags: [Dashboard]
+ *     description: |
+ *       Top 3 (atau Top-N) defect tertinggi beserta breakdown Part Number yang berkontribusi.
+ *       Cocok untuk Pie Chart kanan Q-Gate Board + Tabel (Part Number | Nama Part | QTY).
+ *       - `tipe_proses=PRESS` → Top 3 defect khusus PRESS
+ *       - `tipe_proses=SEWING` → Top 3 defect khusus SEWING
+ *       - Kosongkan `tipe_proses` → **GABUNGAN** (Top 3 dari semua proses)
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: tipe_proses
+ *         schema:
+ *           type: string
+ *           enum: [PRESS, CUTTING, SEWING, QUALITY_CONTROL]
+ *         description: "Filter proses. Kosongkan untuk data GABUNGAN."
+ *       - in: query
+ *         name: top_n
+ *         schema:
+ *           type: integer
+ *           default: 3
+ *         description: "Jumlah Top-N defect (default: 3)"
+ *     responses:
+ *       200:
+ *         description: Top 3 defect + breakdown berhasil diambil
+ *         content:
+ *           application/json:
+ *             example:
+ *               status: success
+ *               data:
+ *                 top3:
+ *                   - rank: 1
+ *                     id_defect: SEWING_PUTUS
+ *                     nama_defect: Sewing Putus
+ *                     total: 48
+ *                     persentase: 62.34
+ *                     breakdown_part:
+ *                       - uniq_no: B35
+ *                         part_no: "71695-VT070-C"
+ *                         nama_part: "PROTECTOR, RR SEAT BACK"
+ *                         jumlah: 24
+ *                 total_ng_keseluruhan: 77
+ */
+router.get(
+	"/top3-defects",
+	validate(getDashboardQuerySchema),
+	dashboardController.getTop3Defects,
+);
+
 export default router;

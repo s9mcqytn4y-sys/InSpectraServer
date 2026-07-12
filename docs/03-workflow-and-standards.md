@@ -30,9 +30,9 @@ Pengujian E2E (End-to-End) sedang direncanakan. Saat ini pengujian mengandalkan:
 Berikut adalah alur penggunaan API transaksional yang sudah diimplementasikan (Fase 2):
 
 ### 1. Checksheet QC
-1. **Start Session**: POST `/api/v1/checksheet/sessions` untuk membuat header sesi pemeriksaan (`e_sesi_checksheet`).
-2. **Submit Item Check**: POST `/api/v1/checksheet/item` untuk melaporkan item part (`e_item_checksheet`).
-3. **Submit Defect**: POST `/api/v1/checksheet/defect` (opsional jika ada NG) untuk merincikan cacat produksi (`e_defect_checksheet`) yang terkait dengan item tersebut.
+1. **Batch Submit**: POST `/api/v1/checksheet/submit-batch` adalah pendekatan baru dan direkomendasikan. Frontend mengumpulkan seluruh item, defect, dan alokasi waktu dalam satu payload. Server memprosesnya dalam **satu transaksi atomik**.
+2. **Validasi Strict**: Proses `submit-batch` memvalidasi secara ketat bahwa defect (`id_defect`) yang di-submit **wajib** terdaftar pada `m_part_defect` untuk part (`uniq_no`) yang dilaporkan. Jika tidak terdaftar, transaksi dibatalkan.
+3. **Legacy (Single Submit)**: Terdapat endpoint `/sessions`, `/item`, `/defect` yang masih bisa dipakai (opsional).
 
 ### 2. Cutting Batch
 1. **Create Batch**: POST `/api/v1/cutting/batches` untuk mencatat aktivitas pemotongan material. API ini akan secara otomatis mengalkulasi `panjang_ok_cm` dan `panjang_ng_cm` dari input *layer* dan ukuran *cutting*.

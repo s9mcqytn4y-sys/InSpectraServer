@@ -29,6 +29,22 @@ export const createPartSchema = z.object({
 	}),
 });
 
+export const updatePartSchema = z.object({
+	body: z.object({
+		part_no: z.string().optional(),
+		name: z.string().min(1, "Nama Part wajib diisi").optional(),
+		model: z.string().optional(),
+		customer: z.string().optional(),
+		commodity: z.enum(TIPE_PROSES).optional(),
+		aktif: z.boolean().optional(),
+		catatan: z.string().optional(),
+		kode_internal: z.string().optional(),
+	}),
+	params: z.object({
+		uniqNo: z.string().min(1, "UniqNo param wajib"),
+	}),
+});
+
 export const createMaterialSchema = z.object({
 	body: z.object({
 		code: z.string().min(1, "Kode Material wajib diisi"),
@@ -45,6 +61,20 @@ export const createMaterialSchema = z.object({
 	}),
 });
 
+export const updateMaterialSchema = z.object({
+	body: z.object({
+		name: z.string().min(1, "Nama Material wajib diisi").optional(),
+		kategori_material: z.string().optional(),
+		satuan: z.string().optional(),
+		spec_ringkas: z.string().optional(),
+		aktif: z.boolean().optional(),
+		supplier_id: z.string().uuid().optional().nullable(),
+	}),
+	params: z.object({
+		code: z.string().min(1, "Code param wajib"),
+	}),
+});
+
 export const createDefectSchema = z.object({
 	body: z.object({
 		id_defect: z.string().min(1, "ID Defect wajib diisi"),
@@ -58,6 +88,19 @@ export const createDefectSchema = z.object({
 			.min(1, "Severity minimal 1")
 			.max(5, "Severity maksimal 5")
 			.optional(),
+	}),
+});
+
+export const updateDefectSchema = z.object({
+	body: z.object({
+		name: z.string().min(1, "Nama Defect wajib diisi").optional(),
+		category: z.enum(["MATERIAL", "PROSES"]).optional(),
+		deskripsi: z.string().optional(),
+		severity_default: z.number().min(1).max(5).optional(),
+		aktif: z.boolean().optional(),
+	}),
+	params: z.object({
+		id_defect: z.string().min(1, "id_defect param wajib"),
 	}),
 });
 

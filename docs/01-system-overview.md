@@ -28,6 +28,12 @@ C:\Software\InSpectraServer\
 │   └── index.ts      # Entry point aplikasi Express
 ├── api.http          # REST Client testing
 └── DESIGN.md         # Desain sistem dari perspektif Frontend UI/UX
+
+## Active Endpoints List
+- **Checksheet QC**: `/api/v1/checksheet/*` (termasuk `/submit-batch`)
+- **Cutting Batch**: `/api/v1/cutting/*`
+- **Laporan Produksi**: `/api/v1/laporan/*`
+- **Dashboard Analytics**: `/api/v1/dashboard/*` (termasuk `/trend-combo`, `/pie-distribution`, `/top3-defects`)
 ```
 
 ## Ekosistem Pengembangan

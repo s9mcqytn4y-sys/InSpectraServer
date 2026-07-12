@@ -5,7 +5,12 @@ import type {
 import prisma from "../config/prisma";
 
 export const getParts = async (
-	params: { page?: number; limit?: number; search?: string; commodity?: string } = {},
+	params: {
+		page?: number;
+		limit?: number;
+		search?: string;
+		commodity?: string;
+	} = {},
 ) => {
 	const { page = 1, limit = 10, search, commodity } = params;
 	const skip = (page - 1) * limit;
@@ -35,7 +40,9 @@ export const getParts = async (
 				m_part_defect: {
 					where: { aktif: true },
 					include: {
-						m_defect: { select: { id_defect: true, name: true, category: true } },
+						m_defect: {
+							select: { id_defect: true, name: true, category: true },
+						},
 					},
 					orderBy: { urutan: "asc" },
 				},
@@ -70,6 +77,33 @@ export const createPart = async (data: {
 			catatan: data.catatan,
 			kode_internal: data.kode_internal,
 		},
+	});
+};
+
+export const updatePart = async (
+	uniqNo: string,
+	data: Partial<{
+		part_no: string;
+		name: string;
+		model: string;
+		customer: string;
+		commodity: tipe_proses_inspectra;
+		aktif: boolean;
+		catatan: string;
+		kode_internal: string;
+	}>,
+) => {
+	return await prisma.masterPart.update({
+		where: { uniqNo },
+		data,
+	});
+};
+
+export const deletePart = async (uniqNo: string) => {
+	// Soft delete
+	return await prisma.masterPart.update({
+		where: { uniqNo },
+		data: { aktif: false },
 	});
 };
 
@@ -120,6 +154,31 @@ export const createMaterial = async (data: {
 	});
 };
 
+export const updateMaterial = async (
+	code: string,
+	data: Partial<{
+		name: string;
+		kategori_material: string;
+		satuan: any;
+		spec_ringkas: string;
+		aktif: boolean;
+		supplier_id: string | null;
+	}>,
+) => {
+	return await prisma.masterMaterial.update({
+		where: { code },
+		data,
+	});
+};
+
+export const deleteMaterial = async (code: string) => {
+	// Soft delete
+	return await prisma.masterMaterial.update({
+		where: { code },
+		data: { aktif: false },
+	});
+};
+
 export const getDefects = async (
 	params: { page?: number; limit?: number; search?: string } = {},
 ) => {
@@ -159,5 +218,29 @@ export const createDefect = async (data: {
 			deskripsi: data.deskripsi,
 			severity_default: data.severity_default,
 		},
+	});
+};
+
+export const updateDefect = async (
+	id_defect: string,
+	data: Partial<{
+		name: string;
+		category: kategori_defect_inspectra;
+		deskripsi: string;
+		severity_default: number;
+		aktif: boolean;
+	}>,
+) => {
+	return await prisma.masterDefect.update({
+		where: { id_defect },
+		data,
+	});
+};
+
+export const deleteDefect = async (id_defect: string) => {
+	// Soft delete
+	return await prisma.masterDefect.update({
+		where: { id_defect },
+		data: { aktif: false },
 	});
 };

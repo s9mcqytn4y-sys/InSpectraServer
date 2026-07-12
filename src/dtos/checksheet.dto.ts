@@ -43,29 +43,40 @@ export const submitBatchSchema = z.object({
 			device_id: z.string().optional(),
 			app_version: z.string().optional(),
 		}),
-		items: z.array(
-			z.object({
-				uniq_no: z.string().min(1, "Uniq No Part wajib diisi"),
-				jumlah_diperiksa: z.number().int().min(1, "Jumlah diperiksa minimal 1"),
-				jumlah_ok: z.number().int().min(0, "Jumlah OK tidak boleh negatif"),
-				jumlah_ng: z.number().int().min(0, "Jumlah NG tidak boleh negatif"),
-				catatan: z.string().optional(),
-				defects: z.array(
-					z.object({
-						id_defect: z.string().min(1, "ID Defect wajib diisi"),
-						nama_defect_snapshot: z.string().min(1, "Nama defect wajib diisi"),
-						kategori: z.string().min(1, "Kategori wajib diisi"),
-						jumlah: z.number().int().min(1, "Kuantitas minimal 1"),
-						fotoUrl: z.string().optional(),
-						slots: z.array(
+		items: z
+			.array(
+				z.object({
+					uniq_no: z.string().min(1, "Uniq No Part wajib diisi"),
+					jumlah_diperiksa: z
+						.number()
+						.int()
+						.min(1, "Jumlah diperiksa minimal 1"),
+					jumlah_ok: z.number().int().min(0, "Jumlah OK tidak boleh negatif"),
+					jumlah_ng: z.number().int().min(0, "Jumlah NG tidak boleh negatif"),
+					catatan: z.string().optional(),
+					defects: z
+						.array(
 							z.object({
-								slot_waktu_id: z.string().uuid("ID Slot tidak valid"),
-								jumlah: z.number().int().min(1, "Jumlah minimal 1"),
-							})
-						).optional(),
-					})
-				).optional(),
-			})
-		).min(1, "Minimal harus ada 1 item yang di-check"),
+								id_defect: z.string().min(1, "ID Defect wajib diisi"),
+								nama_defect_snapshot: z
+									.string()
+									.min(1, "Nama defect wajib diisi"),
+								kategori: z.string().min(1, "Kategori wajib diisi"),
+								jumlah: z.number().int().min(1, "Kuantitas minimal 1"),
+								fotoUrl: z.string().optional(),
+								slots: z
+									.array(
+										z.object({
+											slot_waktu_id: z.string().uuid("ID Slot tidak valid"),
+											jumlah: z.number().int().min(1, "Jumlah minimal 1"),
+										}),
+									)
+									.optional(),
+							}),
+						)
+						.optional(),
+				}),
+			)
+			.min(1, "Minimal harus ada 1 item yang di-check"),
 	}),
 });

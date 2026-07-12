@@ -3,27 +3,14 @@ import * as exportService from "../services/export.service";
 import * as laporanService from "../services/laporan.service";
 import { successResponse } from "../utils/ApiResponse";
 
-export const createLaporan = async (
+export const submitLaporanHarian = async (
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ) => {
 	try {
-		const laporan = await laporanService.createLaporan(req.body);
+		const laporan = await laporanService.submitLaporanHarian(req.body);
 		res.status(201).json(successResponse(laporan));
-	} catch (error) {
-		next(error);
-	}
-};
-
-export const createLaporanDetail = async (
-	req: Request,
-	res: Response,
-	next: NextFunction,
-) => {
-	try {
-		const detail = await laporanService.createLaporanDetail(req.body);
-		res.status(201).json(successResponse(detail));
 	} catch (error) {
 		next(error);
 	}

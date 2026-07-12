@@ -1,0 +1,1593 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "InSpectraServer API",
+    "version": "1.0.0",
+    "description": "API Documentation for InSpectra Quality Control"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development Server"
+    }
+  ],
+  "paths": {
+    "/api/v1/upload": {
+      "post": {
+        "summary": "Upload a file (image)",
+        "tags": [
+          "Upload"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File uploaded successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/parts": {
+      "get": {
+        "summary": "Mendapatkan semua daftar master part",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search keyword"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil mendapatkan daftar part"
+          }
+        }
+      },
+      "post": {
+        "summary": "Menambahkan part baru",
+        "tags": [
+          "MasterData"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "uniqNo",
+                  "name",
+                  "commodity"
+                ],
+                "properties": {
+                  "uniqNo": {
+                    "type": "string"
+                  },
+                  "part_no": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "customer": {
+                    "type": "string"
+                  },
+                  "commodity": {
+                    "type": "string"
+                  },
+                  "catatan": {
+                    "type": "string"
+                  },
+                  "kode_internal": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Part berhasil ditambahkan"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/parts/{uniqNo}": {
+      "put": {
+        "summary": "Mengubah data part",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uniqNo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "commodity": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Part berhasil diubah"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Menghapus data part (soft delete)",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "uniqNo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Part berhasil dihapus"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/materials": {
+      "get": {
+        "summary": "Mendapatkan semua daftar material",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search keyword"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil mendapatkan daftar material"
+          }
+        }
+      },
+      "post": {
+        "summary": "Menambahkan material baru",
+        "tags": [
+          "MasterData"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "code",
+                  "name"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "kategori_material": {
+                    "type": "string"
+                  },
+                  "satuan": {
+                    "type": "string"
+                  },
+                  "spec_ringkas": {
+                    "type": "string"
+                  },
+                  "supplier_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Material berhasil ditambahkan"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/materials/{code}": {
+      "put": {
+        "summary": "Mengubah data material",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "kategori_material": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Material berhasil diubah"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Menghapus data material (soft delete)",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Material berhasil dihapus"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/defects": {
+      "get": {
+        "summary": "Mendapatkan semua daftar jenis defect",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search keyword"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil mendapatkan daftar defect"
+          }
+        }
+      },
+      "post": {
+        "summary": "Menambahkan jenis defect baru",
+        "tags": [
+          "MasterData"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_defect",
+                  "name",
+                  "category"
+                ],
+                "properties": {
+                  "id_defect": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "MATERIAL",
+                      "PROSES"
+                    ]
+                  },
+                  "deskripsi": {
+                    "type": "string"
+                  },
+                  "severity_default": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Defect berhasil ditambahkan"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/defects/{id_defect}": {
+      "put": {
+        "summary": "Mengubah data defect",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id_defect",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Defect berhasil diubah"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Menghapus data defect (soft delete)",
+        "tags": [
+          "MasterData"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id_defect",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defect berhasil dihapus"
+          }
+        }
+      }
+    },
+    "/api/v1/masterdata/upload": {
+      "post": {
+        "summary": "Upload gambar/foto part",
+        "tags": [
+          "MasterData"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Berhasil mengunggah gambar"
+          }
+        }
+      }
+    },
+    "/api/v1/laporan/submit-harian": {
+      "post": {
+        "summary": "Submit production report and details (Daily)",
+        "tags": [
+          "Laporan"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tanggal",
+                  "tipe_proses",
+                  "details"
+                ],
+                "properties": {
+                  "tanggal": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2026-07-10"
+                  },
+                  "tipe_proses": {
+                    "type": "string",
+                    "example": "PRESS"
+                  },
+                  "mp_direct": {
+                    "type": "integer"
+                  },
+                  "mp_indirect": {
+                    "type": "integer"
+                  },
+                  "details": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id_part": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "planning": {
+                          "type": "integer"
+                        },
+                        "actual": {
+                          "type": "integer"
+                        },
+                        "ng": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Laporan harian berhasil disimpan"
+          }
+        }
+      }
+    },
+    "/api/v1/laporan/export": {
+      "get": {
+        "summary": "Export production reports to Excel",
+        "tags": [
+          "Laporan"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Excel file generated successfully"
+          }
+        }
+      }
+    },
+    "/api/v1/laporan": {
+      "get": {
+        "summary": "Get all production reports",
+        "tags": [
+          "Laporan"
+        ]
+      }
+    },
+    "/api/v1/dashboard/top-defects": {
+      "get": {
+        "summary": "Top 5 defect terbanyak dari data E-Checksheet",
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Tanggal mulai filter (ISO 8601: 2026-07-01T00:00:00Z)"
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Tanggal selesai filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar top defect berhasil diambil"
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/oee-metrics": {
+      "get": {
+        "summary": "Kalkulasi OEE (Overall Equipment Effectiveness) dari Laporan Produksi",
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nilai OEE berhasil dikalkulasi"
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/ng-rate": {
+      "get": {
+        "summary": "Rasio NG (Not Good) global dari data E-Checksheet",
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NG Rate berhasil dikalkulasi"
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/pareto": {
+      "get": {
+        "summary": "Pareto Chart - Top N defect dikelompokkan per 4 slot waktu",
+        "tags": [
+          "Dashboard"
+        ],
+        "description": "Mengembalikan data Pareto siap pakai untuk frontend.\nSetiap defect disertai persentase dari total NG, serta jumlah per-slot waktu\n(SLOT_1: 08:00-12:00, SLOT_2: 13:00-15:30, SLOT_3: 16:00-17:00, OVERTIME: 17:00+).\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESS",
+                "CUTTING",
+                "SEWING",
+                "QUALITY_CONTROL"
+              ]
+            },
+            "description": "Filter berdasarkan tipe proses"
+          },
+          {
+            "in": "query",
+            "name": "top_n",
+            "schema": {
+              "type": "integer",
+              "default": 5
+            },
+            "description": "Jumlah Top-N defect yang diambil"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data Pareto berhasil diambil",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "pareto": [
+                      {
+                        "id_defect": "D01",
+                        "nama_defect": "Goresan Dalam (Scratch)",
+                        "total": 45,
+                        "persentase": 60.5,
+                        "per_slot": {
+                          "08:00 - 12:00": 20,
+                          "13:00 - 15:30": 15,
+                          "16:00 - 17:00": 7,
+                          "17:00 - Selesai": 3
+                        }
+                      }
+                    ],
+                    "total_ng_keseluruhan": 74
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/trends": {
+      "get": {
+        "summary": "Tren Rasio NG harian dikelompokkan per slot waktu",
+        "tags": [
+          "Dashboard"
+        ],
+        "description": "Mengembalikan data tren NG per hari yang disertai breakdown per-slot waktu.\nBerguna untuk mendeteksi pola produksi (jam berapa paling banyak NG).\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data tren NG harian berhasil diambil"
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/trend-combo": {
+      "get": {
+        "summary": "Q-Gate Combo Chart — Bar (Total Check/NG) + Line (Defect Rate %)",
+        "tags": [
+          "Dashboard"
+        ],
+        "description": "Data harian untuk Combo Chart Q-Gate Board.\n- `tipe_proses=PRESS` → hanya data PRESS\n- `tipe_proses=SEWING` → hanya data SEWING\n- Kosongkan `tipe_proses` → **GABUNGAN** semua proses (PRESS + SEWING + CUTTING)\n\nResponse mencakup `data_harian` (per tanggal) dan `ringkasan` (agregat global).\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESS",
+                "CUTTING",
+                "SEWING",
+                "QUALITY_CONTROL"
+              ]
+            },
+            "description": "Filter proses. Kosongkan untuk data GABUNGAN."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data Combo Chart berhasil diambil",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "data_harian": [
+                      {
+                        "tanggal": "2026-07-01",
+                        "total_check_pcs": 500,
+                        "total_ng_pcs": 12,
+                        "total_ok_pcs": 488,
+                        "defect_rate_persen": 2.4,
+                        "sesi_count": 3
+                      }
+                    ],
+                    "ringkasan": {
+                      "total_check_pcs": 15000,
+                      "total_ng_pcs": 320,
+                      "total_ok_pcs": 14680,
+                      "defect_rate_persen": 2.133
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/pie-distribution": {
+      "get": {
+        "summary": "Q-Gate Pie Chart — Distribusi Semua Jenis Defect",
+        "tags": [
+          "Dashboard"
+        ],
+        "description": "Distribusi proporsi setiap jenis defect dari total NG.\n- `tipe_proses=PRESS` → distribusi defect hanya di PRESS\n- `tipe_proses=SEWING` → distribusi defect hanya di SEWING\n- Kosongkan `tipe_proses` → **GABUNGAN** semua proses\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESS",
+                "CUTTING",
+                "SEWING",
+                "QUALITY_CONTROL"
+              ]
+            },
+            "description": "Filter proses. Kosongkan untuk data GABUNGAN."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Distribusi defect berhasil diambil",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "distribusi": [
+                      {
+                        "id_defect": "SEWING_PUTUS",
+                        "nama_defect": "Sewing Putus",
+                        "jumlah": 48,
+                        "persentase": 32.65
+                      },
+                      {
+                        "id_defect": "BRUDUL",
+                        "nama_defect": "Brudul",
+                        "jumlah": 25,
+                        "persentase": 17.01
+                      }
+                    ],
+                    "total_ng_keseluruhan": 147
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/top3-defects": {
+      "get": {
+        "summary": "Q-Gate Top 3 Defect + Breakdown Part Number",
+        "tags": [
+          "Dashboard"
+        ],
+        "description": "Top 3 (atau Top-N) defect tertinggi beserta breakdown Part Number yang berkontribusi.\nCocok untuk Pie Chart kanan Q-Gate Board + Tabel (Part Number | Nama Part | QTY).\n- `tipe_proses=PRESS` → Top 3 defect khusus PRESS\n- `tipe_proses=SEWING` → Top 3 defect khusus SEWING\n- Kosongkan `tipe_proses` → **GABUNGAN** (Top 3 dari semua proses)\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESS",
+                "CUTTING",
+                "SEWING",
+                "QUALITY_CONTROL"
+              ]
+            },
+            "description": "Filter proses. Kosongkan untuk data GABUNGAN."
+          },
+          {
+            "in": "query",
+            "name": "top_n",
+            "schema": {
+              "type": "integer",
+              "default": 3
+            },
+            "description": "Jumlah Top-N defect (default: 3)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top 3 defect + breakdown berhasil diambil",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "data": {
+                    "top3": [
+                      {
+                        "rank": 1,
+                        "id_defect": "SEWING_PUTUS",
+                        "nama_defect": "Sewing Putus",
+                        "total": 48,
+                        "persentase": 62.34,
+                        "breakdown_part": [
+                          {
+                            "uniq_no": "B35",
+                            "part_no": "71695-VT070-C",
+                            "nama_part": "PROTECTOR, RR SEAT BACK",
+                            "jumlah": 24
+                          }
+                        ]
+                      }
+                    ],
+                    "total_ng_keseluruhan": 77
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cutting/batches": {
+      "get": {
+        "summary": "Get all cutting batches",
+        "tags": [
+          "Cutting"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cutting batches"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new cutting batch",
+        "tags": [
+          "Cutting"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_sesi",
+                  "material_id"
+                ],
+                "properties": {
+                  "id_sesi": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "material_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created cutting batch"
+          }
+        }
+      }
+    },
+    "/api/v1/checksheet/slots": {
+      "get": {
+        "summary": "Mendapatkan daftar slot waktu pemeriksaan",
+        "tags": [
+          "Checksheet"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PRESS",
+                "CUTTING",
+                "SEWING",
+                "QUALITY_CONTROL"
+              ]
+            },
+            "description": "Filter berdasarkan tipe proses"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar slot waktu berhasil diambil"
+          }
+        }
+      }
+    },
+    "/api/v1/checksheet/sessions": {
+      "get": {
+        "summary": "Mendapatkan semua sesi checksheet dengan paginasi",
+        "tags": [
+          "Checksheet"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Halaman ke-n"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Jumlah data per halaman"
+          },
+          {
+            "in": "query",
+            "name": "tipe_proses",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter berdasarkan tipe proses"
+          },
+          {
+            "in": "query",
+            "name": "tanggal",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter berdasarkan tanggal (format: YYYY-MM-DD)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar sesi berhasil diambil"
+          }
+        }
+      },
+      "post": {
+        "summary": "Memulai sesi checksheet baru (single session)",
+        "tags": [
+          "Checksheet"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tipe_proses",
+                  "nama_shift"
+                ],
+                "properties": {
+                  "tipe_proses": {
+                    "type": "string",
+                    "example": "PRESS"
+                  },
+                  "nama_shift": {
+                    "type": "string",
+                    "example": "SHIFT_1"
+                  },
+                  "nama_operator": {
+                    "type": "string"
+                  },
+                  "nama_line": {
+                    "type": "string"
+                  },
+                  "device_id": {
+                    "type": "string"
+                  },
+                  "app_version": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sesi checksheet berhasil dibuat"
+          }
+        }
+      }
+    },
+    "/api/v1/checksheet/submit-batch": {
+      "post": {
+        "summary": "Submit batch checksheet (sesi + item + defect + slot dalam 1 request)",
+        "tags": [
+          "Checksheet"
+        ],
+        "description": "Endpoint utama untuk mengirim seluruh data checksheet dalam satu transaksi database.\nCocok untuk sinkronisasi data offline (mobile/tablet) ke server.\n\n**Validasi Business Logic:**\n- Semua `uniq_no` harus valid dan aktif di master part\n- Semua `id_defect` harus valid dan aktif di master defect\n- `jumlah_ok + jumlah_ng <= jumlah_diperiksa` per item\n- Total kuantitas defect tidak boleh melebihi `jumlah_ng` item\n- Total alokasi slot per defect harus sama dengan `jumlah` defect\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "session",
+                  "items"
+                ],
+                "properties": {
+                  "session": {
+                    "type": "object",
+                    "required": [
+                      "tipe_proses",
+                      "nama_shift"
+                    ],
+                    "properties": {
+                      "tipe_proses": {
+                        "type": "string",
+                        "example": "PRESS"
+                      },
+                      "nama_shift": {
+                        "type": "string",
+                        "example": "SHIFT_1"
+                      },
+                      "nama_operator": {
+                        "type": "string"
+                      },
+                      "nama_line": {
+                        "type": "string"
+                      },
+                      "device_id": {
+                        "type": "string"
+                      },
+                      "app_version": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "uniq_no",
+                        "jumlah_diperiksa",
+                        "jumlah_ok",
+                        "jumlah_ng"
+                      ],
+                      "properties": {
+                        "uniq_no": {
+                          "type": "string",
+                          "example": "PR-001"
+                        },
+                        "jumlah_diperiksa": {
+                          "type": "integer",
+                          "example": 100
+                        },
+                        "jumlah_ok": {
+                          "type": "integer",
+                          "example": 95
+                        },
+                        "jumlah_ng": {
+                          "type": "integer",
+                          "example": 5
+                        },
+                        "catatan": {
+                          "type": "string"
+                        },
+                        "defects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "id_defect",
+                              "nama_defect_snapshot",
+                              "kategori",
+                              "jumlah"
+                            ],
+                            "properties": {
+                              "id_defect": {
+                                "type": "string",
+                                "example": "D01"
+                              },
+                              "nama_defect_snapshot": {
+                                "type": "string",
+                                "example": "Goresan Dalam (Scratch)"
+                              },
+                              "kategori": {
+                                "type": "string",
+                                "enum": [
+                                  "MATERIAL",
+                                  "PROSES"
+                                ]
+                              },
+                              "jumlah": {
+                                "type": "integer",
+                                "example": 3
+                              },
+                              "fotoUrl": {
+                                "type": "string"
+                              },
+                              "slots": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": [
+                                    "slot_waktu_id",
+                                    "jumlah"
+                                  ],
+                                  "properties": {
+                                    "slot_waktu_id": {
+                                      "type": "string",
+                                      "format": "uuid"
+                                    },
+                                    "jumlah": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Batch checksheet berhasil disimpan"
+          },
+          "400": {
+            "description": "Validasi gagal (part tidak valid, defect tidak valid, dll)"
+          },
+          "422": {
+            "description": "Business rule violation (jumlah tidak konsisten)"
+          }
+        }
+      }
+    },
+    "/api/v1/checksheet/item": {
+      "post": {
+        "summary": "Submit item check tunggal untuk sebuah sesi",
+        "tags": [
+          "Checksheet"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_sesi",
+                  "uniq_no",
+                  "jumlah_diperiksa",
+                  "jumlah_ok",
+                  "jumlah_ng"
+                ],
+                "properties": {
+                  "id_sesi": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniq_no": {
+                    "type": "string"
+                  },
+                  "jumlah_diperiksa": {
+                    "type": "number"
+                  },
+                  "jumlah_ok": {
+                    "type": "number"
+                  },
+                  "jumlah_ng": {
+                    "type": "number"
+                  },
+                  "catatan": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item check berhasil disimpan"
+          }
+        }
+      }
+    },
+    "/api/v1/checksheet/defect": {
+      "post": {
+        "summary": "Submit defect tunggal untuk sebuah item check",
+        "tags": [
+          "Checksheet"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_item",
+                  "id_defect",
+                  "nama_defect_snapshot",
+                  "kategori",
+                  "jumlah"
+                ],
+                "properties": {
+                  "id_item": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "id_defect": {
+                    "type": "string"
+                  },
+                  "nama_defect_snapshot": {
+                    "type": "string"
+                  },
+                  "kategori": {
+                    "type": "string",
+                    "enum": [
+                      "MATERIAL",
+                      "PROSES"
+                    ]
+                  },
+                  "jumlah": {
+                    "type": "number"
+                  },
+                  "fotoUrl": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Defect berhasil disimpan"
+          }
+        }
+      }
+    },
+    "/api/v1/attendance/employees": {
+      "get": {
+        "summary": "Get all employees",
+        "tags": [
+          "Attendance"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of employees"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new employee",
+        "tags": [
+          "Attendance"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nama_lengkap",
+                  "tipe_pekerja",
+                  "line_process"
+                ],
+                "properties": {
+                  "nama_lengkap": {
+                    "type": "string"
+                  },
+                  "tipe_pekerja": {
+                    "type": "string"
+                  },
+                  "line_process": {
+                    "type": "string"
+                  },
+                  "no_reg": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created employee"
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": [
+    {
+      "name": "Upload",
+      "description": "API endpoints for file uploads"
+    },
+    {
+      "name": "MasterData",
+      "description": "API endpoints untuk manajemen master data"
+    },
+    {
+      "name": "Laporan",
+      "description": "API endpoints for managing production reports and details"
+    },
+    {
+      "name": "Dashboard",
+      "description": "API endpoint untuk agregasi, analitik, dan visualisasi data produksi"
+    },
+    {
+      "name": "Cutting",
+      "description": "API endpoints for managing cutting batches"
+    },
+    {
+      "name": "Checksheet",
+      "description": "API endpoint untuk mengelola sesi, item, defect, dan batch submit E-Checksheet"
+    },
+    {
+      "name": "Attendance",
+      "description": "API endpoints for managing employee attendance and master data"
+    }
+  ]
+}

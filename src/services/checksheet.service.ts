@@ -1,4 +1,4 @@
-import { Prisma, tipe_proses_inspectra } from "@prisma/client";
+import { Prisma, type tipe_proses_inspectra } from "@prisma/client";
 import prisma from "../config/prisma";
 
 // ============================================================
@@ -130,12 +130,14 @@ export const submitDefect = async (data: {
 	});
 };
 
-export const getSessions = async (params: {
-	page?: number;
-	limit?: number;
-	tipe_proses?: string;
-	tanggal?: string;
-} = {}) => {
+export const getSessions = async (
+	params: {
+		page?: number;
+		limit?: number;
+		tipe_proses?: string;
+		tanggal?: string;
+	} = {},
+) => {
 	const { page = 1, limit = 20, tipe_proses, tanggal } = params;
 	const skip = (page - 1) * limit;
 
@@ -189,13 +191,13 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 		const invalidParts = uniqNos.filter((u) => !validUniqNos.has(u));
 		if (invalidParts.length > 0) {
 			throw new Error(
-				`Part tidak ditemukan atau tidak aktif: ${invalidParts.join(", ")}`
+				`Part tidak ditemukan atau tidak aktif: ${invalidParts.join(", ")}`,
 			);
 		}
 
 		// --- Validasi: Semua id_defect harus ada dan aktif ---
 		const allDefectIds = input.items.flatMap(
-			(i) => i.defects?.map((d) => d.id_defect) ?? []
+			(i) => i.defects?.map((d) => d.id_defect) ?? [],
 		);
 		if (allDefectIds.length > 0) {
 			const defectsCek = await tx.masterDefect.findMany({
@@ -204,12 +206,40 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 			});
 			const validDefectIds = new Set(defectsCek.map((d) => d.id_defect));
 			const invalidDefects = [...new Set(allDefectIds)].filter(
-				(id) => !validDefectIds.has(id)
+				(id) => !validDefectIds.has(id),
 			);
 			if (invalidDefects.length > 0) {
 				throw new Error(
-					`Defect tidak ditemukan atau tidak aktif: ${invalidDefects.join(", ")}`
+					`Defect tidak ditemukan atau tidak aktif: ${invalidDefects.join(", ")}`,
 				);
+			}
+
+			// --- Validasi STRICT: Setiap defect harus terdaftar di m_part_defect untuk part terkait ---
+			const partDefectMappings = await tx.m_part_defect.findMany({
+				where: {
+					uniq_no: { in: uniqNos },
+					aktif: true,
+				},
+				select: { uniq_no: true, id_defect: true },
+			});
+
+			// Buat Set "uniqNo:defectId" yang valid
+			const validMappingSet = new Set(
+				partDefectMappings.map((m) => `${m.uniq_no}:${m.id_defect}`),
+			);
+
+			// Cek setiap item-defect kombinasi
+			for (const item of input.items) {
+				if (!item.defects) continue;
+				for (const defect of item.defects) {
+					const key = `${item.uniq_no}:${defect.id_defect}`;
+					if (!validMappingSet.has(key)) {
+						throw new Error(
+							`Defect "${defect.id_defect}" tidak terdaftar untuk Part "${item.uniq_no}". ` +
+								`Pastikan mapping m_part_defect sudah dikonfigurasi.`,
+						);
+					}
+				}
 			}
 		}
 
@@ -244,9 +274,12 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 		const createdItems = [];
 		for (const itemInput of input.items) {
 			// Edge case: jumlah_ok + jumlah_ng harus <= jumlah_diperiksa
-			if (itemInput.jumlah_ok + itemInput.jumlah_ng > itemInput.jumlah_diperiksa) {
+			if (
+				itemInput.jumlah_ok + itemInput.jumlah_ng >
+				itemInput.jumlah_diperiksa
+			) {
 				throw new Error(
-					`Part ${itemInput.uniq_no}: jumlah OK + NG tidak boleh melebihi jumlah diperiksa`
+					`Part ${itemInput.uniq_no}: jumlah OK + NG tidak boleh melebihi jumlah diperiksa`,
 				);
 			}
 
@@ -273,11 +306,11 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 				// Edge case: total jumlah defect tidak boleh melebihi jumlah_ng item
 				const totalDefectQty = itemInput.defects.reduce(
 					(acc, d) => acc + d.jumlah,
-					0
+					0,
 				);
 				if (totalDefectQty > itemInput.jumlah_ng) {
 					throw new Error(
-						`Part ${itemInput.uniq_no}: total kuantitas defect (${totalDefectQty}) melebihi jumlah NG (${itemInput.jumlah_ng})`
+						`Part ${itemInput.uniq_no}: total kuantitas defect (${totalDefectQty}) melebihi jumlah NG (${itemInput.jumlah_ng})`,
 					);
 				}
 
@@ -298,12 +331,12 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 						// Edge case: total slot jumlah harus sama dengan jumlah defect
 						const totalSlotQty = defectInput.slots.reduce(
 							(acc, s) => acc + s.jumlah,
-							0
+							0,
 						);
 						if (totalSlotQty !== defectInput.jumlah) {
 							throw new Error(
 								`Defect ${defectInput.id_defect} pada Part ${itemInput.uniq_no}: ` +
-									`total alokasi slot (${totalSlotQty}) harus sama dengan jumlah defect (${defectInput.jumlah})`
+									`total alokasi slot (${totalSlotQty}) harus sama dengan jumlah defect (${defectInput.jumlah})`,
 							);
 						}
 

@@ -56,12 +56,16 @@ npm run build
 npm start
 ```
 
-### Docker
+### Docker (Full Containerization)
 Anda juga dapat menggunakan Docker untuk mempermudah eksekusi lingkungan:
 ```bash
 docker-compose up -d --build
 ```
-Aplikasi backend dan database PostgreSQL akan di-build dan dijalankan secara terisolasi.
+Aplikasi backend (Node.js) dan database (PostgreSQL) akan di-build dan dijalankan secara terisolasi sebagai microservice mandiri yang siap-produksi.
+Untuk mematikan container:
+```bash
+docker-compose down
+```
 
 ## 📖 Dokumentasi API
 
@@ -70,7 +74,9 @@ Setelah server berjalan, dokumentasi interaktif Swagger UI akan tersedia di:
 ```text
 http://localhost:8001/api-docs
 ```
-Anda juga dapat menggunakan file `api.http` di dalam IDE VS Code (menggunakan REST Client) untuk melakukan pengujian manual. Seluruh panduan arsitektur dan aturan sistem tersedia di direktori `docs/`.
+Selain Swagger, Anda juga dapat menggunakan file **Postman Collection** yang tersedia di direktori `docs/postman_collection.json` untuk pengujian *client-side* tanpa mengatur parameter manual.
+
+Seluruh panduan arsitektur dan aturan sistem tersedia di direktori `docs/`.
 
 ## 🔒 Standar Kualitas Kode
 
@@ -85,6 +91,20 @@ Type Checking (Wajib lolos sebelum commit):
 ```bash
 npx tsc --noEmit
 ```
+
+### Pengujian (Unit, Integration & E2E)
+Aplikasi ini menggunakan Vitest untuk piramida pengujian lengkap:
+```bash
+npm run test
+```
+
+## ⚙️ CI/CD & GitHub Actions
+Setiap *push* ke cabang `main` atau pembuatan *Pull Request* akan secara otomatis diproses oleh **GitHub Actions**. Pipeline ini melakukan:
+1. Pengecekan *linting* (Biome).
+2. Pengecekan tipe data statis (TypeScript).
+3. Pengujian Unit dan E2E (Vitest).
+
+Konfigurasi pipeline dapat dilihat di `.github/workflows/ci.yml`.
 
 ## 📝 Lisensi
 

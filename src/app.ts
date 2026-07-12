@@ -19,9 +19,14 @@ const _PORT = env.PORT;
 app.use(helmet());
 app.use(cors());
 
+import pinoHttp from "pino-http";
+
 // Parse JSON payloads
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging
+app.use(pinoHttp({ logger }));
 
 // Serve static files for uploads
 app.use("/uploads", express.static(path.join(process.cwd(), "public/uploads")));
@@ -55,6 +60,7 @@ app.get("/api/v1/health", (_req: Request, res: Response) => {
 	});
 });
 
+import { globalErrorHandler } from "./middlewares/error.middleware";
 import attendanceRoutes from "./routes/attendance.routes";
 import checksheetRoutes from "./routes/checksheet.routes";
 import cuttingRoutes from "./routes/cutting.routes";
@@ -78,9 +84,6 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Global Error Handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-	logger.error(err);
-	res.status(500).json(errorResponse(err.message || "Internal Server Error"));
-});
+app.use(globalErrorHandler);
 
 export default app;

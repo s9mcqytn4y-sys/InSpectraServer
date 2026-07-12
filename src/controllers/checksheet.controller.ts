@@ -47,12 +47,21 @@ export const getSessions = async (
 	next: NextFunction,
 ) => {
 	try {
-		const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
-		const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+		const page = req.query.page
+			? parseInt(req.query.page as string, 10)
+			: undefined;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: undefined;
 		const tipe_proses = req.query.tipe_proses as string | undefined;
 		const tanggal = req.query.tanggal as string | undefined;
 
-		const result = await checksheetService.getSessions({ page, limit, tipe_proses, tanggal });
+		const result = await checksheetService.getSessions({
+			page,
+			limit,
+			tipe_proses,
+			tanggal,
+		});
 		res.json(
 			successResponse(result.data, {
 				count: result.data.length,

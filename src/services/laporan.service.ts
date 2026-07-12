@@ -1,6 +1,6 @@
 import prisma from "../config/prisma";
 
-export const createLaporan = async (data: {
+export const submitLaporanHarian = async (payload: {
 	tanggal: string;
 	tipe_proses: string;
 	mp_direct?: number;
@@ -9,36 +9,69 @@ export const createLaporan = async (data: {
 	jkn_menit?: number;
 	ot_prod?: number;
 	ot_non?: number;
+	bantuan_keluar?: number;
+	bantuan_masuk?: number;
+	details: {
+		id_part: string;
+		planning: number;
+		actual: number;
+		ng: number;
+	}[];
 }) => {
-	return await prisma.e_laporan_produksi.create({
-		data: {
-			tanggal: new Date(data.tanggal),
-			tipe_proses: data.tipe_proses,
-			mp_direct: data.mp_direct,
-			mp_indirect: data.mp_indirect,
-			jkn_hour: data.jkn_hour,
-			jkn_menit: data.jkn_menit,
-			ot_prod: data.ot_prod,
-			ot_non: data.ot_non,
-		},
-	});
-};
+	return await prisma.$transaction(async (tx) => {
+		const laporan = await tx.e_laporan_produksi.upsert({
+			where: {
+				tanggal_tipe_proses: {
+					tanggal: new Date(payload.tanggal),
+					tipe_proses: payload.tipe_proses,
+				},
+			},
+			update: {
+				mp_direct: payload.mp_direct,
+				mp_indirect: payload.mp_indirect,
+				jkn_hour: payload.jkn_hour,
+				jkn_menit: payload.jkn_menit,
+				ot_prod: payload.ot_prod,
+				ot_non: payload.ot_non,
+				bantuan_keluar: payload.bantuan_keluar,
+				bantuan_masuk: payload.bantuan_masuk,
+			},
+			create: {
+				tanggal: new Date(payload.tanggal),
+				tipe_proses: payload.tipe_proses,
+				mp_direct: payload.mp_direct || 0,
+				mp_indirect: payload.mp_indirect || 0,
+				jkn_hour: payload.jkn_hour || 0,
+				jkn_menit: payload.jkn_menit || 0,
+				ot_prod: payload.ot_prod || 0,
+				ot_non: payload.ot_non || 0,
+				bantuan_keluar: payload.bantuan_keluar || 0,
+				bantuan_masuk: payload.bantuan_masuk || 0,
+			},
+		});
 
-export const createLaporanDetail = async (data: {
-	id_laporan: string;
-	id_part: string;
-	planning: number;
-	actual: number;
-	ng: number;
-}) => {
-	return await prisma.e_laporan_produksi_detail.create({
-		data: {
-			id_laporan: data.id_laporan,
-			id_part: data.id_part,
-			planning: data.planning,
-			actual: data.actual,
-			ng: data.ng,
-		},
+		// Hapus detail lama jika ada (sinkronisasi)
+		await tx.e_laporan_produksi_detail.deleteMany({
+			where: { id_laporan: laporan.id },
+		});
+
+		// Tambah detail baru
+		if (payload.details && payload.details.length > 0) {
+			await tx.e_laporan_produksi_detail.createMany({
+				data: payload.details.map((d) => ({
+					id_laporan: laporan.id,
+					id_part: d.id_part,
+					planning: d.planning,
+					actual: d.actual,
+					ng: d.ng,
+				})),
+			});
+		}
+
+		return await tx.e_laporan_produksi.findUnique({
+			where: { id: laporan.id },
+			include: { e_laporan_produksi_detail: true },
+		});
 	});
 };
 

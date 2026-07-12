@@ -95,21 +95,41 @@ Setiap proses (PRESS, CUTTING, SEWING, QUALITY_CONTROL) memiliki 4 slot waktu da
 GET /api/v1/checksheet/slots?tipe_proses=PRESS
 ```
 
-### 6.3 Desain Dashboard: Pareto & Trends
+### 6.3 Desain Dashboard: Pareto, Trends & Analytics
 
-**Pareto Chart (`GET /api/v1/dashboard/pareto`):**
-- Mengembalikan Top-N defect beserta persentase dari total NG
-- Setiap defect menyertakan breakdown `per_slot` (berapa NG di slot 1, 2, 3, overtime)
-- Frontend menggunakan data ini untuk *Stacked Bar Chart* sekaligus *Pareto Line*
+**Q-Gate Board (Gambar 1) & Master Data Analitik:**
+- **Combo Chart (`GET /api/v1/dashboard/trend-combo`)**: Mengembalikan data tren harian (Total Check/NG sebagai Bar, Defect Rate sebagai Line). Bisa difilter per `tipe_proses` (PRESS/SEWING) atau gabungan.
+- **Pie Distribution (`GET /api/v1/dashboard/pie-distribution`)**: Distribusi proporsi (Pie chart kiri) dari semua jenis defect terhadap total NG.
+- **Top 3 Defects (`GET /api/v1/dashboard/top3-defects`)**: Top 3 defect tertinggi (Pie chart kanan) beserta rincian breakdown _Part Number_ yang paling banyak menyumbang defect tersebut (Tabel Part).
 
-**Trend NG Rate (`GET /api/v1/dashboard/trends`):**
-- Mengembalikan NG rate per hari untuk grafik garis harian
-- Disertai `per_slot` (breakdown slot per hari) untuk overlay grafik
-- Berguna mendeteksi: "Senin jam 08-12 selalu NG tinggi → investigasi mesin"
+**Analitik Lanjutan:**
+- **Pareto Chart (`GET /api/v1/dashboard/pareto`)**: Top-N defect beserta breakdown `per_slot` waktu.
+- **Trend NG Rate (`GET /api/v1/dashboard/trends`)**: NG rate per hari disertai breakdown overlay per slot waktu.
 
-### 6.4 Rekomendasi Komponen Frontend
+## 7. Desain Visual & UI/UX (Premium React 2026)
 
-- **`<ChecksheetForm />`**: Form multi-step offline-capable. Step 1: pilih proses & operator. Step 2: input item per item. Step 3: input defect per item + foto + alokasi slot. Step 4: review & submit.
-- **`<ParetoChart />`**: Kombinasi Recharts `BarChart` + `Line` (kumulatif %). Gunakan `per_slot` sebagai `stackId` untuk stacked bar.
-- **`<NgTrendChart />`**: Line chart per hari dengan toggle per-slot overlay.
-- **Offline Support**: Simpan payload batch di `IndexedDB`. Saat online, kirim antrian. UUID `id_sesi` di-generate di klien agar sinkronisasi idempoten.
+### 7.1 Skema Warna & Tema (Dark Mode First)
+- **Primary**: `#0EA5E9` (Sky 500) - Digunakan untuk aksi utama, tombol submit, dan progress bar.
+- **Secondary**: `#6366F1` (Indigo 500) - Digunakan untuk aksen grafik dan elemen navigasi.
+- **Background (Dark)**: `#0F172A` (Slate 900) dengan overlay `#1E293B` (Slate 800) untuk card.
+- **Surface**: Glassmorphism (Background: `rgba(30, 41, 59, 0.7)`, Backdrop Blur: `12px`).
+- **Success**: `#10B981` (Emerald 500).
+- **Danger**: `#EF4444` (Red 500) - Sangat kontras terhadap background gelap.
+
+### 7.2 Tipografi & Ikonografi
+- **Headings**: *Plus Jakarta Sans* (Semi-bold/Bold) untuk kesan modern dan lega.
+- **Body**: *Inter* atau *Geist* (Medium) untuk legibilitas tinggi pada data tabel.
+- **Icons**: *Lucide React* atau *Phosphor Icons* (Duo-tone style) dengan ketebalan stroke `1.5px`.
+
+### 7.3 User Journey: QC Entry Flow
+1. **Identifikasi**: Operator login/scan badge -> Pilih Line & Shift.
+2. **Pilih Part**: Scan Kanban QR atau Cari Part -> Muncul mapping defect relevan.
+3. **Input Check**: Masukkan jumlah OK/NG (Real-time NG Rate preview).
+4. **Detail Defect**: Jika ada NG -> Pilih jenis defect (mapping otomatis) -> Masukkan Qty -> Alokasi Slot Waktu (otomatis disarankan berdasarkan jam saat ini) -> Upload Foto.
+5. **Review**: Ringkasan batch (Total, OK, NG, % Defect) -> Submit.
+6. **Confirmation**: Animasi sukses (Lottie) -> Data masuk ke Dashboard Global.
+
+### 7.4 Robustness & Offline Support
+- **State Persistence**: Menggunakan `TanStack Query` dengan `persistQueryClient` (Local Storage/IndexedDB).
+- **Queue System**: Jika offline, request batch disimpan di `workbox-background-sync`.
+- **UI Copy**: Gunakan bahasa yang teknikal namun jelas (Contoh: "Sinkronisasi Berhasil", "Alokasi Slot Tidak Sesuai").

@@ -6,6 +6,9 @@ import {
 	createMaterialSchema,
 	createPartSchema,
 	getMasterDataQuerySchema,
+	updateDefectSchema,
+	updateMaterialSchema,
+	updatePartSchema,
 } from "../dtos/masterdata.dto";
 import { validate } from "../middlewares/validate";
 
@@ -95,6 +98,57 @@ router.post(
 
 /**
  * @swagger
+ * /api/v1/masterdata/parts/{uniqNo}:
+ *   put:
+ *     summary: Mengubah data part
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: uniqNo
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               commodity:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Part berhasil diubah
+ */
+router.put(
+	"/parts/:uniqNo",
+	validate(updatePartSchema),
+	masterDataController.updatePart,
+);
+
+/**
+ * @swagger
+ * /api/v1/masterdata/parts/{uniqNo}:
+ *   delete:
+ *     summary: Menghapus data part (soft delete)
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: uniqNo
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Part berhasil dihapus
+ */
+router.delete("/parts/:uniqNo", masterDataController.deletePart);
+
+/**
+ * @swagger
  * /api/v1/masterdata/materials:
  *   get:
  *     summary: Mendapatkan semua daftar material
@@ -166,6 +220,57 @@ router.post(
 
 /**
  * @swagger
+ * /api/v1/masterdata/materials/{code}:
+ *   put:
+ *     summary: Mengubah data material
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               kategori_material:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Material berhasil diubah
+ */
+router.put(
+	"/materials/:code",
+	validate(updateMaterialSchema),
+	masterDataController.updateMaterial,
+);
+
+/**
+ * @swagger
+ * /api/v1/masterdata/materials/{code}:
+ *   delete:
+ *     summary: Menghapus data material (soft delete)
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Material berhasil dihapus
+ */
+router.delete("/materials/:code", masterDataController.deleteMaterial);
+
+/**
+ * @swagger
  * /api/v1/masterdata/defects:
  *   get:
  *     summary: Mendapatkan semua daftar jenis defect
@@ -233,6 +338,57 @@ router.post(
 	validate(createDefectSchema),
 	masterDataController.createDefect,
 );
+
+/**
+ * @swagger
+ * /api/v1/masterdata/defects/{id_defect}:
+ *   put:
+ *     summary: Mengubah data defect
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: id_defect
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Defect berhasil diubah
+ */
+router.put(
+	"/defects/:id_defect",
+	validate(updateDefectSchema),
+	masterDataController.updateDefect,
+);
+
+/**
+ * @swagger
+ * /api/v1/masterdata/defects/{id_defect}:
+ *   delete:
+ *     summary: Menghapus data defect (soft delete)
+ *     tags: [MasterData]
+ *     parameters:
+ *       - in: path
+ *         name: id_defect
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Defect berhasil dihapus
+ */
+router.delete("/defects/:id_defect", masterDataController.deleteDefect);
 
 /**
  * @swagger

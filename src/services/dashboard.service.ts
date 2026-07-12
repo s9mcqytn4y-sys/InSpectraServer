@@ -149,7 +149,7 @@ export const getPareto = async (filters: {
 	const topDefectIds = topDefects.map((d) => d.id_defect);
 	const totalNgKeseluruhan = topDefects.reduce(
 		(acc, d) => acc + (d._sum.jumlah || 0),
-		0
+		0,
 	);
 
 	// 2. Ambil alokasi per slot untuk Top-N defect tersebut
@@ -189,9 +189,12 @@ export const getPareto = async (filters: {
 			id_defect: td.id_defect,
 			nama_defect: td.nama_defect_snapshot,
 			total: td._sum.jumlah || 0,
-			persentase: totalNgKeseluruhan > 0
-				? Number((((td._sum.jumlah || 0) / totalNgKeseluruhan) * 100).toFixed(2))
-				: 0,
+			persentase:
+				totalNgKeseluruhan > 0
+					? Number(
+							(((td._sum.jumlah || 0) / totalNgKeseluruhan) * 100).toFixed(2),
+						)
+					: 0,
 			per_slot: {},
 		});
 	}
@@ -201,7 +204,8 @@ export const getPareto = async (filters: {
 		const slotLabel = alokasi.m_slot_waktu?.label_waktu ?? "Tidak Diketahui";
 		const entry = paretoMap.get(defectId);
 		if (entry) {
-			entry.per_slot[slotLabel] = (entry.per_slot[slotLabel] || 0) + alokasi.jumlah;
+			entry.per_slot[slotLabel] =
+				(entry.per_slot[slotLabel] || 0) + alokasi.jumlah;
 		}
 	}
 
@@ -245,13 +249,23 @@ export const getTrends = async (filters: {
 	// 2. Group per tanggal
 	const trendMap = new Map<
 		string,
-		{ tanggal: string; total_diperiksa: number; total_ng: number; sesi_count: number }
+		{
+			tanggal: string;
+			total_diperiksa: number;
+			total_ng: number;
+			sesi_count: number;
+		}
 	>();
 
 	for (const s of sesi) {
 		const tgl = s.tanggal_pemeriksaan.toISOString().split("T")[0];
 		if (!trendMap.has(tgl)) {
-			trendMap.set(tgl, { tanggal: tgl, total_diperiksa: 0, total_ng: 0, sesi_count: 0 });
+			trendMap.set(tgl, {
+				tanggal: tgl,
+				total_diperiksa: 0,
+				total_ng: 0,
+				sesi_count: 0,
+			});
 		}
 		const entry = trendMap.get(tgl)!;
 		entry.total_diperiksa += s.total_diperiksa;
@@ -276,7 +290,9 @@ export const getTrends = async (filters: {
 				select: { id_item: true },
 				include: {
 					e_item_checksheet: {
-						select: { e_sesi_checksheet: { select: { tanggal_pemeriksaan: true } } },
+						select: {
+							e_sesi_checksheet: { select: { tanggal_pemeriksaan: true } },
+						},
 					},
 				},
 			},
@@ -286,9 +302,12 @@ export const getTrends = async (filters: {
 	// 4. Agregasi slot per tanggal
 	const slotPerHari = new Map<string, Record<string, number>>();
 	for (const sd of slotTrend) {
-		const sesiObj = (sd.e_defect_checksheet as any)?.e_item_checksheet?.e_sesi_checksheet;
+		const sesiObj = (sd.e_defect_checksheet as any)?.e_item_checksheet
+			?.e_sesi_checksheet;
 		if (!sesiObj?.tanggal_pemeriksaan) continue;
-		const tgl = new Date(sesiObj.tanggal_pemeriksaan).toISOString().split("T")[0];
+		const tgl = new Date(sesiObj.tanggal_pemeriksaan)
+			.toISOString()
+			.split("T")[0];
 		const slotLabel = sd.m_slot_waktu?.label_waktu ?? "Tidak Diketahui";
 
 		if (!slotPerHari.has(tgl)) slotPerHari.set(tgl, {});
@@ -298,11 +317,254 @@ export const getTrends = async (filters: {
 
 	const trendHarian = Array.from(trendMap.values()).map((hari) => ({
 		...hari,
-		ng_rate: hari.total_diperiksa > 0
-			? Number(((hari.total_ng / hari.total_diperiksa) * 100).toFixed(3))
-			: 0,
+		ng_rate:
+			hari.total_diperiksa > 0
+				? Number(((hari.total_ng / hari.total_diperiksa) * 100).toFixed(3))
+				: 0,
 		per_slot: slotPerHari.get(hari.tanggal) ?? {},
 	}));
 
 	return { trend_harian: trendHarian };
+};
+
+// ============================================================
+// NEW: Trend Combo Chart — Bar (Total Check/NG) + Line (Defect Rate %)
+// Sesuai format Q-Gate Board (Gambar 1): harian tanggal 01–31
+// ============================================================
+
+/**
+ * Mengambil data tren harian untuk Combo Chart di Q-Gate Dashboard.
+ * Output: array per tanggal { tanggal, totalCheck, totalNg, defectRatePersen }
+ */
+export const getTrendCombo = async (filters: {
+	startDate?: string;
+	endDate?: string;
+	tipe_proses?: string;
+}) => {
+	const whereSession: any = {};
+	const dateRange = buildDateRange(filters.startDate, filters.endDate);
+	if (dateRange) whereSession.tanggal_pemeriksaan = dateRange;
+	if (filters.tipe_proses) whereSession.tipe_proses = filters.tipe_proses;
+
+	// Ambil semua sesi dalam range tanggal
+	const sesi = await prisma.checksheetSession.findMany({
+		where: whereSession,
+		select: {
+			tanggal_pemeriksaan: true,
+			total_diperiksa: true,
+			totalNg: true,
+			totalOk: true,
+			tipe_proses: true,
+		},
+		orderBy: { tanggal_pemeriksaan: "asc" },
+	});
+
+	// Agregasi per tanggal
+	const trendMap = new Map<
+		string,
+		{
+			tanggal: string;
+			total_check: number;
+			total_ng: number;
+			sesi_count: number;
+		}
+	>();
+
+	for (const s of sesi) {
+		const tgl = s.tanggal_pemeriksaan.toISOString().split("T")[0];
+		if (!trendMap.has(tgl)) {
+			trendMap.set(tgl, {
+				tanggal: tgl,
+				total_check: 0,
+				total_ng: 0,
+				sesi_count: 0,
+			});
+		}
+		const entry = trendMap.get(tgl)!;
+		entry.total_check += s.total_diperiksa;
+		entry.total_ng += s.totalNg;
+		entry.sesi_count += 1;
+	}
+
+	const comboData = Array.from(trendMap.values()).map((hari) => ({
+		tanggal: hari.tanggal,
+		total_check_pcs: hari.total_check,
+		total_ng_pcs: hari.total_ng,
+		total_ok_pcs: hari.total_check - hari.total_ng,
+		defect_rate_persen:
+			hari.total_check > 0
+				? Number(((hari.total_ng / hari.total_check) * 100).toFixed(3))
+				: 0,
+		sesi_count: hari.sesi_count,
+	}));
+
+	const totalCheck = comboData.reduce((s, d) => s + d.total_check_pcs, 0);
+	const totalNg = comboData.reduce((s, d) => s + d.total_ng_pcs, 0);
+
+	return {
+		data_harian: comboData,
+		ringkasan: {
+			total_check_pcs: totalCheck,
+			total_ng_pcs: totalNg,
+			total_ok_pcs: totalCheck - totalNg,
+			defect_rate_persen:
+				totalCheck > 0 ? Number(((totalNg / totalCheck) * 100).toFixed(3)) : 0,
+		},
+	};
+};
+
+// ============================================================
+// NEW: Pie Distribution — Distribusi Semua Jenis Defect
+// Sesuai Pie Chart kiri di Q-Gate Board (Gambar 1)
+// ============================================================
+
+/**
+ * Mengambil distribusi semua jenis defect (proporsi per nama defect).
+ * Output: array { id_defect, nama_defect, jumlah, persentase }
+ */
+export const getPieDistribution = async (filters: {
+	startDate?: string;
+	endDate?: string;
+	tipe_proses?: string;
+}) => {
+	const whereSession: any = {};
+	const dateRange = buildDateRange(filters.startDate, filters.endDate);
+	if (dateRange) whereSession.tanggal_pemeriksaan = dateRange;
+	if (filters.tipe_proses) whereSession.tipe_proses = filters.tipe_proses;
+
+	const defectGroups = await prisma.e_defect_checksheet.groupBy({
+		by: ["id_defect", "nama_defect_snapshot"],
+		_sum: { jumlah: true },
+		where: {
+			e_item_checksheet: {
+				e_sesi_checksheet: whereSession,
+			},
+		},
+		orderBy: { _sum: { jumlah: "desc" } },
+	});
+
+	const totalNg = defectGroups.reduce(
+		(acc, d) => acc + (d._sum.jumlah || 0),
+		0,
+	);
+
+	return {
+		distribusi: defectGroups.map((d) => ({
+			id_defect: d.id_defect,
+			nama_defect: d.nama_defect_snapshot,
+			jumlah: d._sum.jumlah || 0,
+			persentase:
+				totalNg > 0
+					? Number((((d._sum.jumlah || 0) / totalNg) * 100).toFixed(2))
+					: 0,
+		})),
+		total_ng_keseluruhan: totalNg,
+	};
+};
+
+// ============================================================
+// NEW: Top 3 Defects + Breakdown Part Number
+// Sesuai bagian kanan Q-Gate Board (Gambar 1):
+// Pie kanan (Top 3) + Tabel (Part Number | Part Name | QTY)
+// ============================================================
+
+/**
+ * Mengambil Top 3 Defect tertinggi beserta breakdown Part Number yang berkontribusi.
+ * Cocok untuk Pie Chart kanan + Tabel tiga kolom di Q-Gate Board.
+ */
+export const getTop3Defects = async (filters: {
+	startDate?: string;
+	endDate?: string;
+	tipe_proses?: string;
+	top_n?: number;
+}) => {
+	const topN = filters.top_n ?? 3;
+	const whereSession: any = {};
+	const dateRange = buildDateRange(filters.startDate, filters.endDate);
+	if (dateRange) whereSession.tanggal_pemeriksaan = dateRange;
+	if (filters.tipe_proses) whereSession.tipe_proses = filters.tipe_proses;
+
+	// Step 1: Ambil Top-N defect
+	const topDefects = await prisma.e_defect_checksheet.groupBy({
+		by: ["id_defect", "nama_defect_snapshot"],
+		_sum: { jumlah: true },
+		where: {
+			e_item_checksheet: { e_sesi_checksheet: whereSession },
+		},
+		orderBy: { _sum: { jumlah: "desc" } },
+		take: topN,
+	});
+
+	if (topDefects.length === 0) {
+		return { top3: [], total_ng_keseluruhan: 0 };
+	}
+
+	const totalNgKeseluruhan = topDefects.reduce(
+		(acc, d) => acc + (d._sum.jumlah || 0),
+		0,
+	);
+
+	// Step 2: Untuk setiap defect, ambil breakdown Part Number yang berkontribusi
+	const top3Result = await Promise.all(
+		topDefects.map(async (defect, idx) => {
+			// Ambil jumlah per part untuk defect ini
+			const partBreakdown = await prisma.e_defect_checksheet.groupBy({
+				by: ["id_item"],
+				_sum: { jumlah: true },
+				where: {
+					id_defect: defect.id_defect,
+					e_item_checksheet: { e_sesi_checksheet: whereSession },
+				},
+				orderBy: { _sum: { jumlah: "desc" } },
+			});
+
+			// Ambil info part dari item IDs
+			const itemIds = partBreakdown.map((p) => p.id_item);
+			const items = await prisma.e_item_checksheet.findMany({
+				where: { id: { in: itemIds } },
+				select: {
+					id: true,
+					uniq_no: true,
+					m_part: { select: { name: true, part_no: true } },
+				},
+			});
+
+			const itemMap = new Map(items.map((i) => [i.id, i]));
+
+			const breakdown = partBreakdown
+				.map((pb) => {
+					const item = itemMap.get(pb.id_item);
+					return {
+						uniq_no: item?.uniq_no ?? "TIDAK DIKETAHUI",
+						part_no: item?.m_part?.part_no ?? "-",
+						nama_part: item?.m_part?.name ?? "TIDAK DIKETAHUI",
+						jumlah: pb._sum.jumlah || 0,
+					};
+				})
+				.filter((b) => b.jumlah > 0)
+				.slice(0, 5); // Max top-5 part per defect
+
+			return {
+				rank: idx + 1,
+				id_defect: defect.id_defect,
+				nama_defect: defect.nama_defect_snapshot,
+				total: defect._sum.jumlah || 0,
+				persentase:
+					totalNgKeseluruhan > 0
+						? Number(
+								(
+									((defect._sum.jumlah || 0) / totalNgKeseluruhan) *
+									100
+								).toFixed(2),
+							)
+						: 0,
+				breakdown_part: breakdown,
+			};
+		}),
+	);
+
+	return {
+		top3: top3Result,
+		total_ng_keseluruhan: totalNgKeseluruhan,
+	};
 };
