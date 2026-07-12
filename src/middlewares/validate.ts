@@ -29,7 +29,9 @@ export const validate =
 					path: e.path ? e.path.join(".") : "",
 					message: e.message,
 				}));
-				res.status(400).json({ ...errorResponse("Validation Error"), errors });
+				res
+					.status(400)
+					.json({ ...errorResponse("Validasi data gagal"), errors });
 			} else {
 				next(error);
 			}

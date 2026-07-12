@@ -7,6 +7,24 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  ADMIN
+  USER
+}
+
+model MasterUser {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @unique
+  password_hash String
+  nama_lengkap  String
+  role          Role     @default(USER)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("m_user")
+}
+
 model MasterPart {
   id                                               String                          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   uniqNo                                           String                          @unique @map("uniq_no")
@@ -152,8 +170,9 @@ model MasterEmployee {
 model ChecksheetSession {
   id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   kode_sesi           String?               @unique
+  idempotency_key     String?               @unique
   tipe_proses         tipe_proses_inspectra
-  tanggal_pemeriksaan DateTime              @default(dbgenerated("CURRENT_DATE")) @db.Date
+  tanggal_pemeriksaan DateTime              @default(now()) @db.Timestamptz(6)
   nama_shift          String                @default("SHIFT_1")
   nama_operator       String?
   nama_line           String?

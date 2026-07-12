@@ -30,6 +30,7 @@ interface ItemInput {
 
 interface BatchSubmitInput {
 	session: {
+		idempotency_key?: string;
 		tipe_proses: string;
 		nama_shift: string;
 		nama_operator?: string;
@@ -178,6 +179,35 @@ export const getSessions = async (
 
 export const submitBatch = async (input: BatchSubmitInput) => {
 	return await prisma.$transaction(async (tx) => {
+		// --- Cek Idempotency Key ---
+		if (input.session.idempotency_key) {
+			const existingSession = await tx.checksheetSession.findUnique({
+				where: { idempotency_key: input.session.idempotency_key },
+				include: {
+					e_item_checksheet: {
+						include: {
+							e_defect_checksheet: {
+								include: { e_defect_slot_checksheet: true },
+							},
+						},
+					},
+				},
+			});
+			if (existingSession) {
+				return {
+					sesi: existingSession,
+					items: existingSession.e_item_checksheet,
+					ringkasan: {
+						total_item: existingSession.e_item_checksheet.length,
+						total_diperiksa: existingSession.total_diperiksa,
+						total_ok: existingSession.totalOk,
+						total_ng: existingSession.totalNg,
+						rasio_ng_global: Number(existingSession.rasio_ng_global),
+					},
+				};
+			}
+		}
+
 		// --- Validasi tipe_proses ---
 		const tipeProses = input.session.tipe_proses as tipe_proses_inspectra;
 
@@ -243,7 +273,7 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 			}
 		}
 
-		// --- 1. Buat Sesi Checksheet ---
+		// --- 1. Buat Sesi Checksheet dan Relasi (Nested Writes) ---
 		let totalDiperiksa = 0;
 		let totalOk = 0;
 		let totalNg = 0;
@@ -263,102 +293,93 @@ export const submitBatch = async (input: BatchSubmitInput) => {
 				nama_line: input.session.nama_line,
 				device_id: input.session.device_id,
 				app_version: input.session.app_version,
+				idempotency_key: input.session.idempotency_key,
 				total_diperiksa: totalDiperiksa,
 				totalOk: totalOk,
 				totalNg: totalNg,
 				rasio_ng_global: rasioNgGlobal,
-			},
-		});
-
-		// --- 2. Buat Items dan Defects ---
-		const createdItems = [];
-		for (const itemInput of input.items) {
-			// Edge case: jumlah_ok + jumlah_ng harus <= jumlah_diperiksa
-			if (
-				itemInput.jumlah_ok + itemInput.jumlah_ng >
-				itemInput.jumlah_diperiksa
-			) {
-				throw new Error(
-					`Part ${itemInput.uniq_no}: jumlah OK + NG tidak boleh melebihi jumlah diperiksa`,
-				);
-			}
-
-			const rasioNg =
-				itemInput.jumlah_diperiksa > 0
-					? (itemInput.jumlah_ng / itemInput.jumlah_diperiksa) * 100
-					: 0;
-
-			const item = await tx.e_item_checksheet.create({
-				data: {
-					id_sesi: sesi.id,
-					uniq_no: itemInput.uniq_no,
-					jumlah_diperiksa: itemInput.jumlah_diperiksa,
-					jumlah_ok: itemInput.jumlah_ok,
-					jumlah_ng: itemInput.jumlah_ng,
-					rasio_ng: rasioNg,
-					catatan: itemInput.catatan,
-				},
-			});
-
-			// --- 3. Buat Defects dan Slot Allocations ---
-			const createdDefects = [];
-			if (itemInput.defects && itemInput.defects.length > 0) {
-				// Edge case: total jumlah defect tidak boleh melebihi jumlah_ng item
-				const totalDefectQty = itemInput.defects.reduce(
-					(acc, d) => acc + d.jumlah,
-					0,
-				);
-				if (totalDefectQty > itemInput.jumlah_ng) {
-					throw new Error(
-						`Part ${itemInput.uniq_no}: total kuantitas defect (${totalDefectQty}) melebihi jumlah NG (${itemInput.jumlah_ng})`,
-					);
-				}
-
-				for (const defectInput of itemInput.defects) {
-					const defect = await tx.e_defect_checksheet.create({
-						data: {
-							id_item: item.id,
-							id_defect: defectInput.id_defect,
-							nama_defect_snapshot: defectInput.nama_defect_snapshot,
-							kategori: defectInput.kategori as any,
-							jumlah: defectInput.jumlah,
-							fotoUrl: defectInput.fotoUrl,
-						},
-					});
-
-					// --- 4. Buat Alokasi Slot Waktu ---
-					if (defectInput.slots && defectInput.slots.length > 0) {
-						// Edge case: total slot jumlah harus sama dengan jumlah defect
-						const totalSlotQty = defectInput.slots.reduce(
-							(acc, s) => acc + s.jumlah,
-							0,
-						);
-						if (totalSlotQty !== defectInput.jumlah) {
+				e_item_checksheet: {
+					create: input.items.map((itemInput) => {
+						if (
+							itemInput.jumlah_ok + itemInput.jumlah_ng >
+							itemInput.jumlah_diperiksa
+						) {
 							throw new Error(
-								`Defect ${defectInput.id_defect} pada Part ${itemInput.uniq_no}: ` +
-									`total alokasi slot (${totalSlotQty}) harus sama dengan jumlah defect (${defectInput.jumlah})`,
+								`Part ${itemInput.uniq_no}: jumlah OK + NG tidak boleh melebihi jumlah diperiksa`,
+							);
+						}
+						const totalDefectQty =
+							itemInput.defects?.reduce((acc, d) => acc + d.jumlah, 0) || 0;
+						if (totalDefectQty > itemInput.jumlah_ng) {
+							throw new Error(
+								`Part ${itemInput.uniq_no}: total kuantitas defect (${totalDefectQty}) melebihi jumlah NG (${itemInput.jumlah_ng})`,
 							);
 						}
 
-						await tx.e_defect_slot_checksheet.createMany({
-							data: defectInput.slots.map((slot) => ({
-								id_defect_checksheet: defect.id,
-								slot_waktu_id: slot.slot_waktu_id,
-								jumlah: slot.jumlah,
-							})),
-						});
-					}
+						const rasioNg =
+							itemInput.jumlah_diperiksa > 0
+								? (itemInput.jumlah_ng / itemInput.jumlah_diperiksa) * 100
+								: 0;
 
-					createdDefects.push(defect);
-				}
-			}
+						return {
+							uniq_no: itemInput.uniq_no,
+							jumlah_diperiksa: itemInput.jumlah_diperiksa,
+							jumlah_ok: itemInput.jumlah_ok,
+							jumlah_ng: itemInput.jumlah_ng,
+							rasio_ng: rasioNg,
+							catatan: itemInput.catatan,
+							e_defect_checksheet: {
+								create:
+									itemInput.defects?.map((defectInput) => {
+										const totalSlotQty =
+											defectInput.slots?.reduce(
+												(acc, s) => acc + s.jumlah,
+												0,
+											) || 0;
+										if (
+											defectInput.slots &&
+											defectInput.slots.length > 0 &&
+											totalSlotQty !== defectInput.jumlah
+										) {
+											throw new Error(
+												`Defect ${defectInput.id_defect} pada Part ${itemInput.uniq_no}: total alokasi slot (${totalSlotQty}) harus sama dengan jumlah defect (${defectInput.jumlah})`,
+											);
+										}
 
-			createdItems.push({ ...item, defects: createdDefects });
-		}
+										return {
+											id_defect: defectInput.id_defect,
+											nama_defect_snapshot: defectInput.nama_defect_snapshot,
+											kategori: defectInput.kategori as any,
+											jumlah: defectInput.jumlah,
+											fotoUrl: defectInput.fotoUrl,
+											e_defect_slot_checksheet: {
+												create:
+													defectInput.slots?.map((slot) => ({
+														slot_waktu_id: slot.slot_waktu_id,
+														jumlah: slot.jumlah,
+													})) || [],
+											},
+										};
+									}) || [],
+							},
+						};
+					}),
+				},
+			},
+			include: {
+				e_item_checksheet: {
+					include: {
+						e_defect_checksheet: {
+							include: { e_defect_slot_checksheet: true },
+						},
+					},
+				},
+			},
+		});
 
 		return {
 			sesi,
-			items: createdItems,
+			items: sesi.e_item_checksheet,
 			ringkasan: {
 				total_item: input.items.length,
 				total_diperiksa: totalDiperiksa,

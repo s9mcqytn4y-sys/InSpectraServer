@@ -111,6 +111,37 @@ Content-Type: application/json
   "jumlah": 5
 }
 
+### Submit Checksheet Batch (NEW)
+# Menggabungkan Session, Item, dan Defect dalam satu request menggunakan Prisma Transactions
+POST {{baseUrl}}/checksheet/submit-batch
+Content-Type: application/json
+
+{
+  "session": {
+    "idempotency_key": "dummy-uuid-1234-5678",
+    "tipe_proses": "PRESS",
+    "nama_shift": "SHIFT_1",
+    "nama_operator": "Budi"
+  },
+  "items": [
+    {
+      "uniq_no": "PART-001",
+      "jumlah_diperiksa": 100,
+      "jumlah_ok": 95,
+      "jumlah_ng": 5,
+      "catatan": "Ada defect sedikit",
+      "defects": [
+        {
+          "id_defect": "DEF-001",
+          "nama_defect_snapshot": "Goresan",
+          "kategori": "Mayor",
+          "jumlah": 5
+        }
+      ]
+    }
+  ]
+}
+
 ### ========================================
 ### LAPORAN (REPORTING)
 ### ========================================

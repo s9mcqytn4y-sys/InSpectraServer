@@ -22,7 +22,7 @@ describe("Checksheet API Endpoints - E2E", () => {
 				});
 			expect(res.status).toBe(400);
 			expect(res.body.status).toBe("error");
-			expect(res.body.message).toBe("Validation Error");
+			expect(res.body.message).toBe("Validasi data gagal");
 			expect(res.body.errors.length).toBeGreaterThan(0);
 		});
 
@@ -45,7 +45,7 @@ describe("Checksheet API Endpoints - E2E", () => {
 				});
 			expect(res.status).toBe(400);
 			expect(res.body.status).toBe("error");
-			expect(res.body.message).toBe("Validation Error");
+			expect(res.body.message).toBe("Validasi data gagal");
 
 			expect(res.body.errors.length).toBeGreaterThan(0);
 		});
@@ -77,7 +77,7 @@ describe("Checksheet API Endpoints - E2E", () => {
 				});
 			expect(res.status).toBe(400);
 			expect(res.body.status).toBe("error");
-			expect(res.body.message).toBe("Validation Error");
+			expect(res.body.message).toBe("Validasi data gagal");
 			expect(res.body.errors.length).toBeGreaterThan(0);
 		});
 
@@ -106,6 +106,35 @@ describe("Checksheet API Endpoints - E2E", () => {
 			// Depending on DB state, it might succeed (201) or fail (404 part not found).
 			// We just verify it doesn't fail schema validation.
 			expect(res.status).not.toBe(400);
+		});
+
+		it("should test idempotency if idempotency_key is provided", async () => {
+			const idempotencyKey = "test-uuid-1234";
+			const validPayload = {
+				session: {
+					idempotency_key: idempotencyKey,
+					tipe_proses: "PRESS",
+					nama_shift: "Shift 1",
+				},
+				items: [
+					{
+						uniq_no: "DUMMY-PART-123",
+						jumlah_diperiksa: 100,
+						jumlah_ok: 100,
+						jumlah_ng: 0,
+					},
+				],
+			};
+
+			const res1 = await request(app)
+				.post("/api/v1/checksheet/submit-batch")
+				.send(validPayload);
+			expect(res1.status).not.toBe(400);
+
+			const res2 = await request(app)
+				.post("/api/v1/checksheet/submit-batch")
+				.send(validPayload);
+			expect(res2.status).toBe(res1.status);
 		});
 	});
 });

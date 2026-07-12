@@ -2,8 +2,17 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { errorResponse } from "../utils/ApiResponse";
 
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
+import { env } from "../env";
 
+const JWT_SECRET = env.JWT_SECRET;
+
+declare global {
+	namespace Express {
+		interface Request {
+			user?: any;
+		}
+	}
+}
 export const requireAuth = (
 	req: Request,
 	res: Response,

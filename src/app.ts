@@ -45,9 +45,24 @@ const limiter = rateLimit({
 		status: "fail",
 		metadata: { timestamp: new Date().toISOString() },
 		message:
-			"Too many requests from this IP, please try again after 15 minutes",
+			"Terlalu banyak permintaan dari IP ini, silakan coba lagi setelah 15 menit",
 	},
 });
+
+const batchLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 1000, // Limit each IP to 1000 requests for batch
+	standardHeaders: true,
+	legacyHeaders: false,
+	message: {
+		status: "fail",
+		metadata: { timestamp: new Date().toISOString() },
+		message:
+			"Terlalu banyak permintaan batch dari IP ini, silakan coba lagi setelah 15 menit",
+	},
+});
+
+app.use("/api/v1/checksheet/submit-batch", batchLimiter);
 app.use(limiter);
 
 // Removed duplicate express.json and pinoHttp

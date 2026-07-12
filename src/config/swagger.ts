@@ -40,7 +40,7 @@ const options: swaggerJsdoc.Options = {
 	apis: ["./src/routes/*.ts", "./src/controllers/*.ts", "./src/dtos/*.ts"],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
+export const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Express) => {
 	app.use(

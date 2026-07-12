@@ -36,6 +36,7 @@ export const submitItemCheckSchema = z.object({
 export const submitBatchSchema = z.object({
 	body: z.object({
 		session: z.object({
+			idempotency_key: z.string().optional(),
 			tipe_proses: z.string().min(1, "Tipe proses wajib diisi"),
 			nama_shift: z.string().min(1, "Nama shift wajib diisi"),
 			nama_operator: z.string().min(1, "Nama operator wajib diisi").optional(),

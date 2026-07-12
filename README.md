@@ -4,9 +4,10 @@ InSpectra Quality Control Backend Server. Server ini dirancang khusus untuk mena
 
 ## 🚀 Teknologi (Tech Stack)
 
-- **Node.js** & **Express.js** (Standard Web Server)
+- **Node.js** & **Express.js** (Standard Web Server dengan Graceful Shutdown)
 - **TypeScript** (Static Typing & Strict Mode)
-- **Prisma ORM** dengan **PostgreSQL**
+- **Prisma ORM** dengan **PostgreSQL** (Connection Pooling)
+- **Idempotency Key** untuk mencegah duplikasi data transaksi (Batch Sync)
 - **Zod** untuk Validasi DTO (Pesan Kesalahan dalam Bahasa Indonesia)
 - **Swagger UI** untuk Dokumentasi API
 - **Biome** untuk Linter & Formatter

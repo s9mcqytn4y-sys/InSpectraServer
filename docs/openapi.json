@@ -1,13 +1,32 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "InSpectra API",
+    "title": "InSpectraServer API",
     "version": "1.0.0",
-    "description": "API for InSpectra System"
+    "description": "API Documentation for InSpectra Quality Control",
+    "contact": {
+      "name": "Developer",
+      "email": "developer@inspectra.local"
+    }
   },
   "servers": [
     {
-      "url": "/api/v1"
+      "url": "http://localhost:3000",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
     }
   ],
   "paths": {
@@ -1699,7 +1718,6 @@
       }
     }
   },
-  "components": {},
   "tags": [
     {
       "name": "Upload",
