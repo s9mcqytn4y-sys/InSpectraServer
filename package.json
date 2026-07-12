@@ -3,6 +3,9 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
+	"prisma": {
+		"seed": "tsx prisma/seed.ts"
+	},
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc",
@@ -11,10 +14,9 @@
 		"test:watch": "vitest",
 		"lint": "biome check ./src",
 		"format": "biome format --write ./src",
-		"swagger:export": "tsx scripts/export-openapi.ts"
-	},
-	"prisma": {
-		"seed": "tsx prisma/seed.ts"
+		"swagger:export": "tsx scripts/export-openapi.ts",
+		"db:setup": "npx prisma migrate deploy && npx prisma db seed",
+		"db:seed": "npx prisma db seed"
 	},
 	"keywords": [],
 	"author": "",

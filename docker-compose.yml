@@ -30,6 +30,7 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://postgres:postgrespassword@inspectra-db:5432/inspectra_db?schema=public
       JWT_SECRET: inspectra-docker-secret-change-in-production
+    command: sh -c "npx prisma migrate deploy && npx prisma db seed && node dist/index.js"
     depends_on:
       inspectra-db:
         condition: service_healthy

@@ -69,6 +69,25 @@ async function upsertDefect(data: {
 	return prisma.masterDefect.create({ data });
 }
 
+async function upsertEmployee(data: {
+	id: string;
+	nama_lengkap: string;
+	tipe_pekerja: "STAFF" | "OPERATOR" | "LEADER";
+	no_reg: string;
+	line_process: tipe_proses_inspectra;
+}) {
+	const existing = await prisma.masterEmployee.findUnique({
+		where: { id: data.id },
+	});
+	if (existing) {
+		return prisma.masterEmployee.update({
+			where: { id: data.id },
+			data,
+		});
+	}
+	return prisma.masterEmployee.create({ data });
+}
+
 // ============================================================================
 // Main
 // ============================================================================
@@ -1240,6 +1259,38 @@ async function main() {
 	} else {
 		console.log("✅ Dummy Pareto Transaction Data already exists.");
 	}
+
+	// ========================================================================
+	// 5. Seed Master Employee
+	// ========================================================================
+	const employees = [
+		{
+			id: "emp-001",
+			nama_lengkap: "Budi Santoso",
+			tipe_pekerja: "OPERATOR" as const,
+			no_reg: "REG-001",
+			line_process: "PRESS" as const,
+		},
+		{
+			id: "emp-002",
+			nama_lengkap: "Siti Aminah",
+			tipe_pekerja: "OPERATOR" as const,
+			no_reg: "REG-002",
+			line_process: "SEWING" as const,
+		},
+		{
+			id: "emp-003",
+			nama_lengkap: "Agus Pratama",
+			tipe_pekerja: "LEADER" as const,
+			no_reg: "REG-003",
+			line_process: "PRESS" as const,
+		},
+	];
+
+	for (const emp of employees) {
+		await upsertEmployee(emp);
+	}
+	console.log(`✅ Seeded ${employees.length} Master Employees.`);
 
 	console.log("\n🎉 Seeding selesai!");
 }
