@@ -543,6 +543,51 @@ async function main() {
 	}
 	console.log(`✅ Seeded ${cuttingSizeRefs.length} Cutting Size References.`);
 
+	// ========================================================================
+	// 9. Seed Pareto (Dummy Transaction Data for UI/UX Mocking)
+	// ========================================================================
+	const SESSION_ID = "00000000-0000-0000-0000-000000000001";
+	const ITEM_ID = "00000000-0000-0000-0000-000000000011";
+
+	const existingSession = await prisma.checksheetSession.findUnique({ where: { id: SESSION_ID } });
+	if (!existingSession) {
+		await prisma.checksheetSession.create({
+			data: {
+				id: SESSION_ID,
+				kode_sesi: "SESI-SEED-01",
+				tipe_proses: "PRESS",
+				tanggal_pemeriksaan: new Date(),
+				total_diperiksa: 500,
+				totalOk: 410,
+				totalNg: 90,
+			}
+		});
+		
+		await prisma.e_item_checksheet.create({
+			data: {
+				id: ITEM_ID,
+				id_sesi: SESSION_ID,
+				uniq_no: "PR-001",
+				jumlah_diperiksa: 500,
+				jumlah_ok: 410,
+				jumlah_ng: 90,
+			}
+		});
+
+		await prisma.e_defect_checksheet.createMany({
+			data: [
+				{ id_item: ITEM_ID, id_defect: "D01", nama_defect_snapshot: "Goresan Dalam (Scratch)", kategori: "PROSES", jumlah: 15 },
+				{ id_item: ITEM_ID, id_defect: "D02", nama_defect_snapshot: "Penyok (Dent)", kategori: "PROSES", jumlah: 42 },
+				{ id_item: ITEM_ID, id_defect: "D03", nama_defect_snapshot: "Karat (Rust)", kategori: "MATERIAL", jumlah: 8 },
+				{ id_item: ITEM_ID, id_defect: "D04", nama_defect_snapshot: "Noda Kotor (Stain)", kategori: "MATERIAL", jumlah: 20 },
+				{ id_item: ITEM_ID, id_defect: "D05", nama_defect_snapshot: "Lubang Meleset (Missing Hole)", kategori: "PROSES", jumlah: 5 },
+			]
+		});
+		console.log("✅ Seeded Dummy Pareto Transaction Data.");
+	} else {
+		console.log("✅ Dummy Pareto Transaction Data already exists.");
+	}
+
 	console.log("\n🎉 Seeding selesai!");
 }
 

@@ -1,49 +1,54 @@
 # DESIGN.md - Panduan UI/UX InSpectra (Frontend Web App)
 
-Dokumen ini adalah acuan mutlak bagi **Stitch by Google** (atau AI Agent Frontend) untuk men-generate antarmuka pengguna (UI/UX) aplikasi InSpectra versi Web.
-> **Note:** Dokumen Arsitektur Backend telah dipindahkan ke `docs/BACKEND_ARCHITECTURE.md`.
+Dokumen ini adalah acuan mutlak bagi **Stitch by Google** (atau AI Agent Frontend) untuk men-generate antarmuka pengguna (UI/UX) aplikasi InSpectra versi Web, khususnya dalam ekosistem **React & Next.js** (App Router).
 
-## 1. Tujuan Desain Utama (Industrial Workspace)
-InSpectra Web App bukan halaman pemasaran/landing page. Ini adalah aplikasi operasional berdensitas data tinggi (*High Data Density*) untuk lantai produksi.
-- **Takt Time Visual:** Operator harus bisa membaca status Andon, data part, dan total defect dalam < 1.5 detik.
-- **Anti-Lag Form:** Input kuantitas NG dan sinkronisasi status lokal tidak boleh memicu frame drop.
-- **Jujur Terhadap Data:** Jika data kosong, tampilkan "Belum ada data". Dilarang menggunakan placeholder palsu (*Lorem Ipsum*).
+> **Note:** Dokumen Arsitektur Backend kini berada di `docs/BACKEND_ARCHITECTURE.md`. Dokumen ini difokuskan sepenuhnya pada desain *Frontend Web*.
 
-## 2. Sistem Warna (Dark SaaS & Adaptive Theme)
-Desain wajib responsif terhadap mode gelap/terang, namun prioritas utamanya adalah lingkungan pencahayaan pabrik yang adaptif.
+## 1. Filosofi Desain (Modern, Clean & Fresh)
+Kita meninggalkan estetika industri yang kaku dan gelap. InSpectra Web App mengusung desain **Modern SaaS Dashboard** yang *clean*, presisi, dan segar.
+- **Data-Driven Clarity:** Fokus pada konten. Hirarki visual diatur oleh tipografi dan ruang putih (white space), bukan kotak atau warna latar belakang yang berlebihan.
+- **NO Glassmorphism:** DILARANG KERAS menggunakan efek blur, `backdrop-filter`, atau elemen kaca transparan. Desain harus *flat*, solid, dengan tepi yang tegas namun halus.
+- **Responsiveness & Densitas Data:** Karena ini aplikasi operasional, tabel data harus cukup padat (*compact*) tanpa terlihat berantakan, serta responsif dari layar tablet industri hingga monitor desktop 4K.
 
-### A. Background & Surface
-- Gunakan palet abu-abu batu bara / *charcoal matte* untuk *surface* (`surfaceContainer`, `surfaceContainerHigh`).
-- **DILARANG** menggunakan warna hitam solid (`#000000`) atau putih pekat (`#FFFFFF`) karena dapat memicu kelelahan mata (*eye strain*).
+## 2. Sistem Warna (Solid & High-Contrast)
+Desain wajib responsif terhadap *Light Mode* (Utama) dan *Dark Mode*. Sistem warna didasarkan pada warna solid yang bersih.
 
-### B. Pemisah & Kontainer
-- Pemisah antar kontainer data menggunakan border tipis (1px solid) dengan warna yang rendah kontrasnya terhadap background (`outlineVariant`).
-- JANGAN menggunakan efek blur, shadow/box-shadow tebal yang tidak wajar. Gunakan tonal elevation ringan.
+### A. Background & Surface (Light Mode Primary)
+- **Background Utama:** Putih murni (`#FFFFFF`) atau abu-abu sangat muda (`#F8FAFC` - *Slate 50*).
+- **Surface (Card/Container):** Putih murni dengan border 1px solid `border-slate-200`. JANGAN gunakan bayangan (*shadow*) besar. Jika butuh kedalaman, gunakan shadow sangat tipis (`shadow-sm`).
+- **Teks Utama:** Abu-abu sangat gelap (`#0F172A` - *Slate 900*) untuk *Heading*, dan (`#475569` - *Slate 600*) untuk teks sekunder/deskripsi.
 
-### C. Aksen Interaktif & Andon
-- **Primary / CTA:** Gunakan warna **Amber (Kuning Kunyit)** atau **Bright Cobalt Blue** secara selektif HANYA untuk tombol aksi (Simpan, Kirim).
-- **Abnormal (Andon / Defect):** Gunakan container berwarna `errorContainer` (Semi-transparan merah) dan teks `onErrorContainer`.
+### B. Aksen & Interaksi
+- **Primary / CTA (Call to Action):** Gunakan warna **Vibrant Cobalt Blue** (`#2563EB`) atau **Emerald Green** (`#10B981`) yang segar untuk tombol utama (Simpan, Kirim).
+- **Abnormal (Andon / Defect):** Gunakan warna **Crimson Red** solid (`#DC2626`) dipadu dengan badge *soft-red* (`#FEE2E2`) agar peringatan terlihat tegas dan tidak menimbulkan kebingungan.
+- **Hover States:** Warna aksen hanya boleh digelapkan (*darken* 10%) saat status `:hover` atau `:active`.
 
-## 3. Tipografi & Bahasa UI
-- Font: Modern Sans Serif (Inter, Roboto, atau Outfit).
-- Hierarki: Gunakan proporsi tipografi Material 3 yang jelas (Title untuk Header Kartu, Label untuk Metadata).
-- Semua Bahasa UI *End-User* wajib Bahasa Indonesia standar industri:
-  - Form Checksheet -> **Lembar Periksa**
+## 3. Tipografi & Komponen (React / Next.js)
+- **Font Utama:** Inter, Geist, atau Roboto. Prioritaskan penggunaan font *sans-serif* yang memiliki *readability* tinggi pada ukuran kecil.
+- **Framework Komponen:** Sangat disarankan untuk menggunakan perpaduan **Tailwind CSS v4** dan komponen *unstyled* seperti **Radix UI** atau ekosistem **Shadcn UI**.
+- **Bahasa UI End-User:** Wajib Bahasa Indonesia standar industri:
+  - Checksheet -> **Lembar Periksa**
   - Master Data -> **Data Induk**
-  - Defect/Reject -> **Defect** (atau Temuan NG)
-  - Submit -> **Kirim**
+  - Reject -> **Defect** (Temuan NG)
+  - Submit -> **Simpan / Kirim**
 
-## 4. Anatomi Komponen & Layout
-### Card Blueprint
-Setiap entitas utama (Part, Material, Slot Waktu, Laporan) ditampilkan dalam Kartu (Card) bersudut melengkung (radius sedang, misal `1rem`), ber-border tipis, dan tata letak internal vertikal-horizontal yang proporsional (memanfaatkan `flex` atau `grid`).
+## 4. Anatomi Komponen Spesifik
+### A. Card & Data Container
+- Bersudut sedikit membulat (radius `md` atau `lg`, `0.5rem` - `0.75rem`).
+- Tanpa background berwarna di dalam kontainer data. Hanya putih bersih dengan garis pembatas (border) `border-slate-200`.
 
-### Lembar Periksa (E-Checksheet Form)
-- **Sticky Summary:** Ringkasan akumulasi total kuantitas OK/NG harus tetap terlihat (*sticky header* atau *sidebar*).
-- **Inline Validation:** Validasi angka (misal tidak boleh lebih dari total produksi) muncul persis di bawah field terkait.
+### B. Input & Form (Validasi Inline)
+- Field input menggunakan border 1px `slate-300`, membulat tipis `rounded-md`. Saat *focus*, gunakan ring biru muda (`ring-2 ring-blue-500/20`).
+- **Validasi:** Pesan *error* form (Zod validation) harus tampil secara *inline* tepat di bawah kolom input dengan teks berwarna merah solid dan ikon `AlertCircle`. Jangan memunculkan semburat merah ke seluruh layar.
+
+### C. Indikator Status & Badge
+- Gunakan badge solid yang modern (teks tebal berwarna gelap di atas background pastel muda).
+  - Contoh *Status OK*: Teks Hijau Tua di atas background Hijau Pucat.
+  - Contoh *Status NG/Defect*: Teks Merah Tua di atas background Merah Pucat.
 
 ## 5. Manajemen State & Skeleton
-- **Loading:** Tampilkan Skeleton (kerangka statis), JANGAN spinner mutlak yang memicu lompatan layout.
-- **Empty:** Teks jujur "Belum ada data".
-- **Error:** Tampilkan banner error berwarna Andon merah yang jelas + tombol Retry.
+- **Loading:** Tampilkan efek **Skeleton Shimmer** *flat* yang elegan saat memuat data Server Components atau SWR/React Query. Dilarang menggunakan animasi spinner yang memblokir layar kecuali untuk operasi *mutasi* (*submit* data).
+- **Empty State:** Gunakan ilustrasi minimalis bergaya garis (*line-art*) 2D tanpa bayangan, dipadukan teks "Belum ada data".
+- **Error Boundary:** Sediakan komponen *Error Fallback* (App Router) yang rapih, dengan tombol "Muat Ulang Halaman".
 
-*Generate komponen frontend dengan mengacu penuh pada pedoman estetika pabrik modern ini.*
+*Generate seluruh kode Frontend Next.js dengan berpegang erat pada estetika Modern SaaS, presisi komponen React, dan performa yang sangat cepat (tanpa efek grafis berat seperti Glassmorphism).*
