@@ -1,6 +1,6 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
+import path from "node:path";
 import multer from "multer";
-import path from "path";
 
 // Configure Multer storage
 const storage = multer.diskStorage({

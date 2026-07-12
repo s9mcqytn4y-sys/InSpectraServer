@@ -1,7 +1,7 @@
 import app from "./app";
+import prisma, { pool } from "./config/prisma";
 import { env } from "./env";
 import { logger } from "./utils/logger";
-import prisma, { pool } from "./config/prisma";
 
 const PORT = env.PORT;
 

@@ -23,7 +23,9 @@ export const getEmployees = async (
 ) => {
 	try {
 		const search = req.query.search as string | undefined;
-		const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: 100;
 		const employees = await attendanceService.getEmployees({ search, limit });
 		res.json(successResponse(employees));
 	} catch (error) {
@@ -43,8 +45,10 @@ export const getAttendanceReport = async (
 			| tipe_proses_inspectra
 			| undefined;
 		const search = req.query.search as string | undefined;
-		const page = req.query.page ? parseInt(req.query.page as string) : 1;
-		const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+		const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: 50;
 		const exportPdf = req.query.exportPdf === "true";
 
 		if (!startDate || !endDate) {

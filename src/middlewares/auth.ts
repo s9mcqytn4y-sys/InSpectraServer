@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { errorResponse } from "../utils/ApiResponse";
-
 import { env } from "../env";
+import { errorResponse } from "../utils/ApiResponse";
 
 const JWT_SECRET = env.JWT_SECRET;
 
