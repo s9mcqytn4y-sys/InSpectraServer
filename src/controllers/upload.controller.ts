@@ -16,7 +16,9 @@ export const uploadFile = async (
 
 		// File is uploaded to /public/uploads
 		// We return the URL path that can be saved in DB
-		const fileUrl = `/uploads/${req.file.filename}`;
+		// Mendukung cloud (CDN/S3 URL) maupun local
+		const baseUrl = process.env.CLOUD_STORAGE_URL || process.env.BASE_URL || "";
+		const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
 		res.json(successResponse({ url: fileUrl }));
 	} catch (error) {

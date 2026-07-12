@@ -504,6 +504,45 @@ async function main() {
 	}
 	console.log(`✅ Seeded ${employees.length} Master Karyawan.`);
 
+	// ========================================================================
+	// 7. Seed BOM / Material Composition (m_part_child)
+	// ========================================================================
+	const partChildren = [
+		{ parent_uniq_no: "71702-VT020-C0", child_uniq_no: "BJ1" },
+		{ parent_uniq_no: "71701-VT020-C0", child_uniq_no: "B35" },
+	];
+	for (const pc of partChildren) {
+		const existing = await prisma.m_part_child.findFirst({
+			where: { parent_uniq_no: pc.parent_uniq_no, child_uniq_no: pc.child_uniq_no }
+		});
+		if (!existing) {
+			await prisma.m_part_child.create({ data: pc });
+		}
+	}
+	console.log(`✅ Seeded ${partChildren.length} Part Children (BOM).`);
+
+	// ========================================================================
+	// 8. Seed Cutting Size Reference (m_part_cutting_size_reference)
+	// ========================================================================
+	const cuttingSizeRefs = [
+		{ uniq_no: "CT-001", size_cutting_cm: 120.0, urutan: 1 },
+		{ uniq_no: "CT-001", size_cutting_cm: 60.0, urutan: 2 },
+	];
+	for (const csr of cuttingSizeRefs) {
+		const existing = await prisma.m_part_cutting_size_reference.findFirst({
+			where: { uniq_no: csr.uniq_no, size_cutting_cm: csr.size_cutting_cm }
+		});
+		if (existing) {
+			await prisma.m_part_cutting_size_reference.update({
+				where: { id: existing.id },
+				data: csr,
+			});
+		} else {
+			await prisma.m_part_cutting_size_reference.create({ data: csr });
+		}
+	}
+	console.log(`✅ Seeded ${cuttingSizeRefs.length} Cutting Size References.`);
+
 	console.log("\n🎉 Seeding selesai!");
 }
 
