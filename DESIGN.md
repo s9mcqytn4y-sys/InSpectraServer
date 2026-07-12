@@ -1,54 +1,98 @@
-# DESIGN.md - Panduan UI/UX InSpectra (Frontend Web App)
+# InSpectra - Frontend Design System & Architecture Plan
 
-Dokumen ini adalah acuan mutlak bagi **Stitch by Google** (atau AI Agent Frontend) untuk men-generate antarmuka pengguna (UI/UX) aplikasi InSpectra versi Web, khususnya dalam ekosistem **React & Next.js** (App Router).
+## 1. Visi & Konsep Utama
 
-> **Note:** Dokumen Arsitektur Backend kini berada di `docs/BACKEND_ARCHITECTURE.md`. Dokumen ini difokuskan sepenuhnya pada desain *Frontend Web*.
+Aplikasi web InSpectra dirancang ulang dari mobile-first menjadi **Enterprise Web Application** yang scalable menggunakan **React.js & Next.js 14+ (App Router)**. Konsep UI/UX menghindari "glassmorphism" dan lebih menekankan pada estetika **"Modern, Clean, Fresh & Profesional"**.
 
-## 1. Filosofi Desain (Modern, Clean & Fresh)
-Kita meninggalkan estetika industri yang kaku dan gelap. InSpectra Web App mengusung desain **Modern SaaS Dashboard** yang *clean*, presisi, dan segar.
-- **Data-Driven Clarity:** Fokus pada konten. Hirarki visual diatur oleh tipografi dan ruang putih (white space), bukan kotak atau warna latar belakang yang berlebihan.
-- **NO Glassmorphism:** DILARANG KERAS menggunakan efek blur, `backdrop-filter`, atau elemen kaca transparan. Desain harus *flat*, solid, dengan tepi yang tegas namun halus.
-- **Responsiveness & Densitas Data:** Karena ini aplikasi operasional, tabel data harus cukup padat (*compact*) tanpa terlihat berantakan, serta responsif dari layar tablet industri hingga monitor desktop 4K.
+### Objektif Desain:
+- **Kejelasan (Clarity):** Data operasional, laporan, dan pareto harus mudah dibaca.
+- **Efisiensi (Efficiency):** Pengurangan jumlah klik untuk akses Laporan, Absensi, Pareto, dan Master Data.
+- **Fokus (Focus):** Menggunakan desain "Flat/Clean" dengan penekanan pada Data-Ink ratio (menghapus elemen dekoratif yang tidak perlu).
 
-## 2. Sistem Warna (Solid & High-Contrast)
-Desain wajib responsif terhadap *Light Mode* (Utama) dan *Dark Mode*. Sistem warna didasarkan pada warna solid yang bersih.
+## 2. Tech Stack Frontend
 
-### A. Background & Surface (Light Mode Primary)
-- **Background Utama:** Putih murni (`#FFFFFF`) atau abu-abu sangat muda (`#F8FAFC` - *Slate 50*).
-- **Surface (Card/Container):** Putih murni dengan border 1px solid `border-slate-200`. JANGAN gunakan bayangan (*shadow*) besar. Jika butuh kedalaman, gunakan shadow sangat tipis (`shadow-sm`).
-- **Teks Utama:** Abu-abu sangat gelap (`#0F172A` - *Slate 900*) untuk *Heading*, dan (`#475569` - *Slate 600*) untuk teks sekunder/deskripsi.
+- **Framework:** Next.js 14 (App Router) + React 18+
+- **Styling:** Tailwind CSS v3/v4 + Shadcn UI (Radix UI primitives)
+- **State Management:** Zustand (Global State) + React Query (Server State / Data Fetching)
+- **Data Table:** TanStack Table v8 (untuk reporting, checksheet, & master data)
+- **Charts:** Recharts / Chart.js (Untuk Pareto dan Tren Laporan)
+- **Forms:** React Hook Form + Zod (Validasi Kuat)
+- **PDF Export:** Di-handle oleh Backend via REST API (PDFMake) -> Frontend menyediakan trigger download/view blob (`window.open` atau FileSaver).
 
-### B. Aksen & Interaksi
-- **Primary / CTA (Call to Action):** Gunakan warna **Vibrant Cobalt Blue** (`#2563EB`) atau **Emerald Green** (`#10B981`) yang segar untuk tombol utama (Simpan, Kirim).
-- **Abnormal (Andon / Defect):** Gunakan warna **Crimson Red** solid (`#DC2626`) dipadu dengan badge *soft-red* (`#FEE2E2`) agar peringatan terlihat tegas dan tidak menimbulkan kebingungan.
-- **Hover States:** Warna aksen hanya boleh digelapkan (*darken* 10%) saat status `:hover` atau `:active`.
+## 3. UI/UX & Design Guidelines
 
-## 3. Tipografi & Komponen (React / Next.js)
-- **Font Utama:** Inter, Geist, atau Roboto. Prioritaskan penggunaan font *sans-serif* yang memiliki *readability* tinggi pada ukuran kecil.
-- **Framework Komponen:** Sangat disarankan untuk menggunakan perpaduan **Tailwind CSS v4** dan komponen *unstyled* seperti **Radix UI** atau ekosistem **Shadcn UI**.
-- **Bahasa UI End-User:** Wajib Bahasa Indonesia standar industri:
-  - Checksheet -> **Lembar Periksa**
-  - Master Data -> **Data Induk**
-  - Reject -> **Defect** (Temuan NG)
-  - Submit -> **Simpan / Kirim**
+### A. Palet Warna (Modern & Clean)
+Tidak menggunakan transparansi blur (glassmorphism). Memakai skema warna solid dengan kontras tinggi (Web Content Accessibility Guidelines - WCAG 2.1 AA).
 
-## 4. Anatomi Komponen Spesifik
-### A. Card & Data Container
-- Bersudut sedikit membulat (radius `md` atau `lg`, `0.5rem` - `0.75rem`).
-- Tanpa background berwarna di dalam kontainer data. Hanya putih bersih dengan garis pembatas (border) `border-slate-200`.
+- **Primary Color:** `#0f172a` (Slate 900) - Digunakan untuk sidebar, header, dan teks utama.
+- **Accent/Brand Color:** `#2563eb` (Blue 600) - CTA, tombol aktif, link, highlight tabel.
+- **Success Color:** `#16a34a` (Green 600) - Status OK, Indikator hadir.
+- **Danger/Warning Color:** `#dc2626` (Red 600) / `#ea580c` (Orange 600) - Status NG, Error, Absen.
+- **Background (Surface):** `#f8fafc` (Slate 50) - Background aplikasi (soft gray).
+- **Card/Container:** `#ffffff` (White) - Card dengan border `#e2e8f0` (Slate 200), shadow sangat tipis (`shadow-sm`).
 
-### B. Input & Form (Validasi Inline)
-- Field input menggunakan border 1px `slate-300`, membulat tipis `rounded-md`. Saat *focus*, gunakan ring biru muda (`ring-2 ring-blue-500/20`).
-- **Validasi:** Pesan *error* form (Zod validation) harus tampil secara *inline* tepat di bawah kolom input dengan teks berwarna merah solid dan ikon `AlertCircle`. Jangan memunculkan semburat merah ke seluruh layar.
+### B. Typography
+- **Font Family:** `Inter` atau `Geist` (Modern Sans-Serif).
+- **Heading:** Bold & tebal, untuk judul halaman (`text-2xl font-semibold`).
+- **Body:** `text-sm` (14px) untuk data table dan form agar muat banyak informasi di layar.
 
-### C. Indikator Status & Badge
-- Gunakan badge solid yang modern (teks tebal berwarna gelap di atas background pastel muda).
-  - Contoh *Status OK*: Teks Hijau Tua di atas background Hijau Pucat.
-  - Contoh *Status NG/Defect*: Teks Merah Tua di atas background Merah Pucat.
+### C. Komponen Shadcn UI yang digunakan
+- **Data Table:** Kolom dengan filter, pagination, dan sorting dinamis. Standarisasi tabel tabular layout (border-collapse, alternating rows) untuk densitas data maksimal.
+- **Date Range Picker:** Integrasi `date-fns` untuk filter laporan bulanan/mingguan.
+- **Combobox / Select:** Untuk memilih `Line Process` dan fitur pencarian Master Data.
+- **Dialogs (Modals):** Untuk form input CRUD (Create/Update Master Data) secara cepat tanpa pindah halaman.
+- **Toast / Sonner:** Untuk notifikasi sukses/error mutasi data.
 
-## 5. Manajemen State & Skeleton
-- **Loading:** Tampilkan efek **Skeleton Shimmer** *flat* yang elegan saat memuat data Server Components atau SWR/React Query. Dilarang menggunakan animasi spinner yang memblokir layar kecuali untuk operasi *mutasi* (*submit* data).
-- **Empty State:** Gunakan ilustrasi minimalis bergaya garis (*line-art*) 2D tanpa bayangan, dipadukan teks "Belum ada data".
-- **Error Boundary:** Sediakan komponen *Error Fallback* (App Router) yang rapih, dengan tombol "Muat Ulang Halaman".
+## 4. User Journey & Standarisasi Fitur Laporan
 
-*Generate seluruh kode Frontend Next.js dengan berpegang erat pada estetika Modern SaaS, presisi komponen React, dan performa yang sangat cepat (tanpa efek grafis berat seperti Glassmorphism).*
+### a. Dashboard, Analytics & Pareto
+1. **User membuka aplikasi:** Landing page langsung menampilkan ringkasan hari ini.
+2. **Chart Pareto:** Menampilkan grafik bar chart kelainan/NG terbanyak (dari `/dashboard/pareto` dan `/dashboard/top3-defects`).
+3. **Filter Global:** Pengguna dapat mengganti rentang tanggal di kanan atas, seluruh chart akan ter-update otomatis.
+4. **Export PDF Pareto:** Menambahkan tombol "Export PDF" untuk men-download tabular laporan pareto dan tren yang diproses oleh backend.
+
+### b. E-Checksheet & Transaksi (Press, Sewing, Cutting)
+1. **Masuk ke Menu E-Checksheet:** Memilih departemen.
+2. **Pilih Sesi/Batch:** Melihat daftar batch hari ini.
+3. **Form Input Clean (Standar Tabular):** Form dirender sebagai data grid (spreadsheet-like) yang bisa diakses cepat dengan keyboard navigation (Tab & Enter) untuk kecepatan entri data.
+4. **Validasi:** Edge-case di-handle kuat di UI (Misal: QTY NG tidak bisa lebih besar dari QTY Diperiksa - QTY OK).
+
+### c. Sistem Laporan (Produksi & Absensi)
+1. **Navigasi ke Menu Laporan.**
+2. **Filter Data:** Pilih Date Range, Tipe Proses, atau Cari Nama.
+3. **Standarisasi View Data:** Tabel laporan wajib menggunakan densitas tinggi (padding minimum) agar mencakup metrik Planning, Actual, NG, MP Direct, dll.
+4. **PDF Export Architecture:** Tombol "Download PDF" yang secara transparan mengirim request ke API dengan `exportPdf=true`. Frontend menangani byte stream response sebagai download file atau Blob view, memastikan layout A4 Landscape yang di-generate backend tersaji tanpa distorsi browser-printing.
+
+### d. Master Data (Data Induk)
+1. **Navigasi ke Master Data (Material / Karyawan / Part).**
+2. **List View:** Table dengan search bar yang memanfaatkan **GIN Index (Full-Text Search)** di backend untuk pencarian super cepat (`nama_lengkap`, `nama_part`).
+3. **Detail Spec:** Khusus untuk material cutting, dimensi (panjang, lebar, tebal, berat, gramasi) ditampilkan secara struktur `grid` di dalam panel (Sheet / Modal detail).
+
+## 5. Standar Kode & Struktur Folder (Frontend)
+
+Struktur ini memastikan kode tertata rapi (Feature-Driven Architecture):
+
+```text
+src/
+├── app/                  # Next.js App Router (Pages & Layouts)
+│   ├── (dashboard)/      # Protected routes (Dashboard, Master Data, dll)
+│   └── auth/             # Login pages
+├── components/
+│   ├── ui/               # Shadcn UI base components
+│   ├── layout/           # Sidebar, Header, Breadcrumbs
+│   └── shared/           # Reusable components (misal: DataTable, DatePicker)
+├── features/             # Modularized code by feature domain
+│   ├── absensi/          # Components, Hooks, API calls khusus absensi
+│   ├── checksheet/
+│   ├── master-data/
+│   └── reports/          # Menampung standardisasi laporan PDF viewer & grid
+├── lib/                  # Utility functions (Axios instance, Zod schemas, utils.ts)
+├── store/                # Zustand stores
+└── types/                # Global TypeScript definitions
+```
+
+## 6. Persiapan Infrastruktur (Koneksi Backend)
+
+- **Axios Interceptors:** Meng-handle error terpusat. Jika Backend mengembalikan 400/500, otomatis memunculkan `Toast` dengan pesan dari server.
+- **Server Actions vs Client Fetch:** Menggunakan React Query untuk list data agar cache berjalan optimal di sisi klien dan mendukung paginasi instan. Menggunakan Server Actions untuk inisialisasi layout dasar.
+- **Environment Variables:** `NEXT_PUBLIC_API_URL` mengarah ke Docker backend (misal: `http://localhost:3000/api/v1`).
