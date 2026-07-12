@@ -96,3 +96,38 @@ src/
 - **Axios Interceptors:** Meng-handle error terpusat. Jika Backend mengembalikan 400/500, otomatis memunculkan `Toast` dengan pesan dari server.
 - **Server Actions vs Client Fetch:** Menggunakan React Query untuk list data agar cache berjalan optimal di sisi klien dan mendukung paginasi instan. Menggunakan Server Actions untuk inisialisasi layout dasar.
 - **Environment Variables:** `NEXT_PUBLIC_API_URL` mengarah ke Docker backend (misal: `http://localhost:3000/api/v1`).
+- **OpenAPI & Postman:** Spesifikasi API yang utuh tersedia di `docs/openapi.json` dan `docs/postman_collection.json`. Gunakan spesifikasi ini untuk meng-generate TypeScript API client (misal via *Orval* atau *OpenAPI Generator*).
+
+---
+
+## 7. Stitch By Google Prompt Block
+
+Gunakan blok prompt berikut jika Anda (atau agen AI / UI Generator) hendak membuat komponen antarmuka menggunakan **Stitch by Google**:
+
+```markdown
+# 🎨 Stitch by Google: InSpectra Frontend Generation Prompt
+
+**Role:** You are a senior frontend engineer and UI/UX designer expert in modern, clean enterprise applications (No Glassmorphism).
+**Tech Stack Required:** Next.js 14 App Router, Tailwind CSS v4, Shadcn UI, Lucide Icons, and Recharts.
+
+**Context:**
+I am building "InSpectra", an Enterprise Manufacturing Information System. Please generate the frontend interfaces based on the provided `DESIGN.md` and `docs/openapi.json` schemas.
+
+**Core Design Directives:**
+1. **Aesthetics:** Use a strict Modern & Clean UI. Do NOT use glassmorphism, intense blur effects, or unnecessary transparencies.
+2. **Colors:** Base background: `bg-slate-50`. Surfaces/Cards: `bg-white` with `border-slate-200` and `shadow-sm`. Primary accents: `bg-blue-600`. Text: `text-slate-900` for headings, `text-slate-600` for body.
+3. **Typography:** Use the `Inter` font. Maximize Data-Ink ratio. Use `text-sm` (14px) for data grids to fit more data.
+4. **Layout:** Provide a left-side navigation sidebar (`w-64`) and a top header containing user profile and global date filters.
+
+**Tasks for Stitch:**
+Please generate the following screens (one by one or all if possible):
+1. **Pareto Dashboard:** A page featuring a global Date Range Picker and a Recharts Bar Chart showing "Top 3 Defects" and "NG Rate". Must include an "Export PDF" CTA button.
+2. **Master Data View (Material):** A high-density Data Table (TanStack Table style) featuring a search bar (which utilizes backend GIN indexing) and columns for: Material Code, Name, Type, and a button to open a Sheet/Modal for detailed Specs (length, width, thickness, weight, grammage, cutting size).
+3. **E-Checksheet Form:** A spreadsheet-like data entry grid for production checks. Must be fully accessible via keyboard (Tab/Enter navigation). Fields: "Target", "Actual", "OK", "NG". Include strict client-side validation using React Hook Form + Zod.
+4. **Laporan (Reports) Page:** A tabular view for Absensi and Production reports featuring date range filters, Line Process combobox, and a prominent "Download PDF" button that streams the Blob from `/api/v1/laporan?exportPdf=true`.
+
+**Output Constraints:**
+- Output clean, accessible React components using Tailwind utility classes.
+- Assume all Shadcn UI primitives (Button, Table, Dialog, Sheet, Input, DatePicker, Select) are available at `@/components/ui`.
+- Focus heavily on enterprise data-density; do not add large unnecessary paddings.
+```
